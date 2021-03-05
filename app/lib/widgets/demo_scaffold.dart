@@ -1,13 +1,11 @@
-import 'dart:convert';
-
+import 'package:app/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/models/documents/document.dart';
 import 'package:flutter_quill/widgets/controller.dart';
 import 'package:flutter_quill/widgets/toolbar.dart';
 
-typedef DemoContentBuilder = Widget Function(
-    BuildContext context, QuillController controller);
+typedef DemoContentBuilder = Widget Function(BuildContext context, QuillController controller);
 
 // Common scaffold for all examples.
 class DemoScaffold extends StatefulWidget {
@@ -54,19 +52,18 @@ class _DemoScaffoldState extends State<DemoScaffold> {
 
   Future<void> _loadFromAssets() async {
     try {
-      final result =
-          await rootBundle.loadString('assets/${widget.documentFilename}');
-      final doc = Document.fromJson(jsonDecode(result));
+      // final result =
+      //     await rootBundle.loadString('assets/${widget.documentFilename}');
+      // final doc = Document.fromJson(jsonDecode(result));
+      final doc = Document.fromJson(QUILL_TO_ZEFYR_COMPLEX_JSON_3);
       setState(() {
-        _controller = QuillController(
-            document: doc, selection: TextSelection.collapsed(offset: 0));
+        _controller = QuillController(document: doc, selection: TextSelection.collapsed(offset: 0));
         _loading = false;
       });
     } catch (error) {
       final doc = Document()..insert(0, 'Empty asset');
       setState(() {
-        _controller = QuillController(
-            document: doc, selection: TextSelection.collapsed(offset: 0));
+        _controller = QuillController(document: doc, selection: TextSelection.collapsed(offset: 0));
         _loading = false;
       });
     }
@@ -90,15 +87,11 @@ class _DemoScaffoldState extends State<DemoScaffold> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: _loading || widget.showToolbar == false
-            ? null
-            : QuillToolbar.basic(controller: _controller),
+        title: _loading || widget.showToolbar == false ? null : QuillToolbar.basic(controller: _controller),
         actions: actions,
       ),
       floatingActionButton: widget.floatingActionButton,
-      body: _loading
-          ? Center(child: Text('Loading...'))
-          : widget.builder(context, _controller),
+      body: _loading ? Center(child: Text('Loading...')) : widget.builder(context, _controller),
     );
   }
 }

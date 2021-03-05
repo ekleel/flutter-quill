@@ -20,9 +20,9 @@ class Embeddable {
 }
 
 class BlockEmbed extends Embeddable {
-  BlockEmbed(String type, String data) : super(type, data);
+  BlockEmbed(String type, dynamic data) : super(type, data);
 
   static final BlockEmbed horizontalRule = BlockEmbed('divider', 'hr');
 
-  static BlockEmbed image(String imageUrl) => BlockEmbed('image', imageUrl);
+  static BlockEmbed image(dynamic imageUrl) => BlockEmbed('image', imageUrl);
 }

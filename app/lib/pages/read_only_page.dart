@@ -1,3 +1,4 @@
+import 'package:app/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/widgets/controller.dart';
 import 'package:flutter_quill/widgets/editor.dart';
@@ -45,6 +46,7 @@ class _ReadOnlyPageState extends State<ReadOnlyPage> {
           enableInteractiveSelection: true,
           expands: false,
           padding: EdgeInsets.zero,
+          embedBuilder: defaultEmbedBuilder,
         ),
       ),
     );
