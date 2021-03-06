@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/models/documents/attribute.dart';
 import 'package:flutter_quill/models/documents/document.dart';
+import 'package:flutter_quill/models/documents/nodes/embed.dart';
 import 'package:flutter_quill/models/documents/nodes/leaf.dart' as leaf;
 import 'package:flutter_quill/widgets/controller.dart';
 import 'package:flutter_quill/widgets/default_styles.dart';
@@ -17,23 +19,13 @@ import 'package:tuple/tuple.dart';
 import 'read_only_page.dart';
 
 Widget defaultEmbedBuilder(BuildContext context, leaf.Embed embed) {
-  // print('embed: ${embed.value.data}');
-  return GestureDetector(
-    onTap: () {
-      print('GestureDetector!!!!!!!!');
-    },
-    child: Row(
-      children: [
-        TextButton(
-          onPressed: () {
-            print('TextButton!!!!!!!!');
-          },
-          child: Text('Click'),
-        ),
-        Text('مرفق! ${embed.value.type}'),
-      ],
-    ),
-  );
+  switch (embed.value.type) {
+    // case 'video':
+    //   return EditorVideo(id: 'bczyP-kDwSA');
+    //   break;
+    default:
+      return Text('مرفق! ${embed.value.type}');
+  }
 }
 
 const QUILL_TO_ZEFYR_COMPLEX_JSON_3 = [
@@ -85,25 +77,6 @@ const QUILL_TO_ZEFYR_COMPLEX_JSON_3 = [
   {
     "insert": {"video": "https://www.youtube.com/embed/bczyP-kDwSA"}
   },
-  // {"insert": "this is a check list"},
-  // {
-  //   "attributes": {"list": "checked"},
-  //   "insert": "\n"
-  // },
-  // {"insert": "this is a uncheck list"},
-  // {
-  //   "attributes": {"list": "unchecked"},
-  //   "insert": "\n"
-  // },
-  // {
-  //   "insert": {
-  //     "image": {
-  //       "nid": "4MiyMyfAR#up",
-  //       "user": "dYsxj0xN8hMubzQP0gDFwJ3BYUC3",
-  //       "dims": "{\"width\":1069.0,\"height\":1069.0,\"aspectRatio\":1.0}"
-  //     }
-  //   }
-  // },
   {
     "insert":
         "في هذا التحديث قمنا بطرح خاصية أخرى لضمان تجربة استخدام أروع وقراءة أكثر راحة على كلمة، فيمكنك تغيير نمط الألوان للون "
@@ -208,9 +181,27 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: Icon(Icons.save),
-            onPressed: () {
+            onPressed: () async {
               final delta = _controller.document.toDelta();
-              print('delta: ${delta.toJson()}');
+              final json = delta.toJson();
+              await Clipboard.setData(
+                ClipboardData(text: jsonEncode(json)),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.image),
+            onPressed: () {
+              final index = _controller.selection.baseOffset;
+              final length = _controller.selection.extentOffset - index;
+              _controller.replaceText(
+                index,
+                length,
+                BlockEmbed('video', {
+                  'source': 'https://www.youtube.com/embed/bczyP-kDwSA',
+                }),
+                null,
+              );
             },
           ),
         ],
@@ -256,6 +247,12 @@ class _HomePageState extends State<HomePage> {
               expands: false,
               padding: EdgeInsets.zero,
               embedBuilder: defaultEmbedBuilder,
+              onTap: (details, segment) {
+                if (segment.value is BlockEmbed) {
+                  final embed = segment.value as BlockEmbed;
+                  print('onTap embed: ${embed.data}');
+                }
+              },
               customStyles: DefaultStyles(
                 h1: DefaultTextBlockStyle(
                   TextStyle(
@@ -298,7 +295,11 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Container(
-            child: QuillToolbar.basic(controller: _controller, onImagePickCallback: _onImagePickCallback),
+            child: QuillToolbar.basic(
+              controller: _controller,
+              onImagePickCallback: _onImagePickCallback,
+              showHorizontalRule: true,
+            ),
           ),
         ],
       ),

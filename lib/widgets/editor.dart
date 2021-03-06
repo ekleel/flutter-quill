@@ -392,7 +392,6 @@ class _QuillEditorSelectionGestureDetectorBuilder extends EditorTextSelectionGes
     if (_flipListCheckbox(pos, line, segmentResult)) {
       return true;
     }
-    print('onTapping: ${segment.value}');
     if (getEditor().widget.onTap != null) {
       getEditor().widget.onTap(details, segment);
       return false;
