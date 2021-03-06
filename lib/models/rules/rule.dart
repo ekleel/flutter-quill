@@ -11,19 +11,16 @@ enum RuleType { INSERT, DELETE, FORMAT }
 abstract class Rule {
   const Rule();
 
-  Delta apply(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta apply(Delta document, int index, {int len, Object data, Attribute attribute}) {
     assert(document != null);
     assert(index != null);
     validateArgs(len, data, attribute);
-    return applyRule(document, index,
-        len: len, data: data, attribute: attribute);
+    return applyRule(document, index, len: len, data: data, attribute: attribute);
   }
 
   validateArgs(int len, Object data, Attribute attribute);
 
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute});
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute});
 
   RuleType get type;
 }
@@ -52,22 +49,19 @@ class Rules {
 
   static Rules getInstance() => _instance;
 
-  Delta apply(RuleType ruleType, Document document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta apply(RuleType ruleType, Document document, int index, {int len, Object data, Attribute attribute}) {
     final delta = document.toDelta();
     for (var rule in _rules) {
       if (rule.type != ruleType) {
         continue;
       }
       try {
-        final result = rule.apply(delta, index,
-            len: len, data: data, attribute: attribute);
+        final result = rule.apply(delta, index, len: len, data: data, attribute: attribute);
         if (result != null) {
-          print("Rule $rule applied");
           return result..trim();
         }
       } catch (e) {
-        throw e;
+        rethrow;
       }
     }
     throw ('Apply rules failed');

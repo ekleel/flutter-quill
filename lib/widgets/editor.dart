@@ -151,29 +151,31 @@ class QuillEditor extends StatefulWidget {
   final ValueChanged<String> onLaunchUrl;
   final void Function(TapUpDetails, leaf.Leaf) onTap;
   final EmbedBuilder embedBuilder;
+  final TextSelectionControls textSelectionControls;
 
-  QuillEditor(
-      {@required this.controller,
-      @required this.focusNode,
-      @required this.scrollController,
-      @required this.scrollable,
-      @required this.padding,
-      @required this.autoFocus,
-      this.showCursor,
-      @required this.readOnly,
-      this.placeholder,
-      this.enableInteractiveSelection,
-      this.minHeight,
-      this.maxHeight,
-      this.customStyles,
-      @required this.expands,
-      this.textCapitalization = TextCapitalization.sentences,
-      this.keyboardAppearance = Brightness.light,
-      this.scrollPhysics,
-      this.onLaunchUrl,
-      this.onTap,
-      this.embedBuilder = kIsWeb ? _defaultEmbedBuilderWeb : _defaultEmbedBuilder})
-      : assert(controller != null),
+  QuillEditor({
+    @required this.controller,
+    @required this.focusNode,
+    @required this.scrollController,
+    @required this.scrollable,
+    @required this.padding,
+    @required this.autoFocus,
+    this.showCursor,
+    @required this.readOnly,
+    this.placeholder,
+    this.enableInteractiveSelection,
+    this.minHeight,
+    this.maxHeight,
+    this.customStyles,
+    @required this.expands,
+    this.textCapitalization = TextCapitalization.sentences,
+    this.keyboardAppearance = Brightness.light,
+    this.scrollPhysics,
+    this.onLaunchUrl,
+    this.onTap,
+    this.embedBuilder = kIsWeb ? _defaultEmbedBuilderWeb : _defaultEmbedBuilder,
+    this.textSelectionControls,
+  })  : assert(controller != null),
         assert(scrollController != null),
         assert(scrollable != null),
         assert(focusNode != null),
@@ -226,7 +228,7 @@ class _QuillEditorState extends State<QuillEditor> implements EditorTextSelectio
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
-        textSelectionControls = materialTextSelectionControls;
+        textSelectionControls = widget.textSelectionControls ?? materialTextSelectionControls;
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
         cursorColor ??= selectionTheme.cursorColor ?? theme.colorScheme.primary;
@@ -235,7 +237,7 @@ class _QuillEditorState extends State<QuillEditor> implements EditorTextSelectio
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
         CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
-        textSelectionControls = cupertinoTextSelectionControls;
+        textSelectionControls = widget.textSelectionControls ?? cupertinoTextSelectionControls;
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
         cursorColor ??= selectionTheme.cursorColor ?? cupertinoTheme.primaryColor;

@@ -817,11 +817,15 @@ class RawEditorState extends EditorState
   }
 
   _didChangeTextEditingValue() {
-    if (_keyboardVisible) {
-      _onChangeTextEditingValue();
-    } else {
+    if (!widget.enableInteractiveSelection) {
       requestKeyboard();
     }
+    _onChangeTextEditingValue();
+    // if (_keyboardVisible) {
+    //   _onChangeTextEditingValue();
+    // } else {
+    //   requestKeyboard();
+    // }
   }
 
   _onChangeTextEditingValue() {

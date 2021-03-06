@@ -234,6 +234,7 @@ class _HomePageState extends State<HomePage> {
               expands: false,
               padding: EdgeInsets.zero,
               embedBuilder: defaultEmbedBuilder,
+              textSelectionControls: materialTextSelectionControls,
               onTap: (details, segment) {
                 if (segment.value is BlockEmbed) {
                   final embed = segment.value as BlockEmbed;

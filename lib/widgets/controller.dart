@@ -19,8 +19,7 @@ class QuillController extends ChangeNotifier {
         assert(selection != null);
 
   factory QuillController.basic() {
-    return QuillController(
-        document: Document(), selection: TextSelection.collapsed(offset: 0));
+    return QuillController(document: Document(), selection: TextSelection.collapsed(offset: 0));
   }
 
   // item1: Document state before [change].
@@ -37,9 +36,7 @@ class QuillController extends ChangeNotifier {
       );
 
   Style getSelectionStyle() {
-    return document
-        .collectStyle(selection.start, selection.end - selection.start)
-        .mergeAll(toggledStyle);
+    return document.collectStyle(selection.start, selection.end - selection.start).mergeAll(toggledStyle);
   }
 
   void undo() {
@@ -55,9 +52,7 @@ class QuillController extends ChangeNotifier {
       // // cursor exceeds the length of document, position it in the end
       // updateSelection(
       //     TextSelection.collapsed(offset: document.length), ChangeSource.LOCAL);
-      updateSelection(
-          TextSelection.collapsed(offset: this.selection.baseOffset + len),
-          ChangeSource.LOCAL);
+      updateSelection(TextSelection.collapsed(offset: this.selection.baseOffset + len), ChangeSource.LOCAL);
     } else {
       // no need to move cursor
       notifyListeners();
@@ -83,17 +78,10 @@ class QuillController extends ChangeNotifier {
       try {
         delta = document.replace(index, len, data);
       } catch (e) {
-        print('document.replace failed: $e');
-        throw e;
+        rethrow;
       }
-      if (delta != null &&
-          toggledStyle.isNotEmpty &&
-          delta.isNotEmpty &&
-          delta.length <= 2 &&
-          delta.last.isInsert) {
-        Delta retainDelta = Delta()
-          ..retain(index)
-          ..retain(data is String ? data.length : 1, toggledStyle.toJson());
+      if (delta != null && toggledStyle.isNotEmpty && delta.isNotEmpty && delta.length <= 2 && delta.last.isInsert) {
+        Delta retainDelta = Delta()..retain(index)..retain(data is String ? data.length : 1, toggledStyle.toJson());
         document.compose(retainDelta, ChangeSource.LOCAL);
       }
     }
@@ -117,7 +105,6 @@ class QuillController extends ChangeNotifier {
             ChangeSource.LOCAL,
           );
         } catch (e) {
-          print('getPositionDelta or getPositionDelta error: $e');
           throw e;
         }
       }
@@ -157,10 +144,8 @@ class QuillController extends ChangeNotifier {
       _updateSelection(textSelection, source);
     } else {
       textSelection = selection.copyWith(
-          baseOffset:
-              delta.transformPosition(selection.baseOffset, force: false),
-          extentOffset:
-              delta.transformPosition(selection.extentOffset, force: false));
+          baseOffset: delta.transformPosition(selection.baseOffset, force: false),
+          extentOffset: delta.transformPosition(selection.extentOffset, force: false));
       if (selection != textSelection) {
         _updateSelection(textSelection, source);
       }
@@ -180,7 +165,6 @@ class QuillController extends ChangeNotifier {
     selection = textSelection;
     int end = document.length - 1;
     selection = selection.copyWith(
-        baseOffset: math.min(selection.baseOffset, end),
-        extentOffset: math.min(selection.extentOffset, end));
+        baseOffset: math.min(selection.baseOffset, end), extentOffset: math.min(selection.extentOffset, end));
   }
 }
