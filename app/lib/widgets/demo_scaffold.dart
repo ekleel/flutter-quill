@@ -55,7 +55,7 @@ class _DemoScaffoldState extends State<DemoScaffold> {
       // final result =
       //     await rootBundle.loadString('assets/${widget.documentFilename}');
       // final doc = Document.fromJson(jsonDecode(result));
-      final doc = Document.fromJson(QUILL_TO_ZEFYR_COMPLEX_JSON_3);
+      final doc = Document.fromJson(DELTA_SAMPLE);
       setState(() {
         _controller = QuillController(document: doc, selection: TextSelection.collapsed(offset: 0));
         _loading = false;

@@ -28,8 +28,7 @@ class Document {
 
   final Rules _rules = Rules.getInstance();
 
-  final StreamController<Tuple3<Delta, Delta, ChangeSource>> _observer =
-      StreamController.broadcast();
+  final StreamController<Tuple3<Delta, Delta, ChangeSource>> _observer = StreamController.broadcast();
 
   final History _history = History();
 
@@ -93,8 +92,7 @@ class Document {
 
     Delta delta = Delta();
 
-    Delta formatDelta = _rules.apply(RuleType.FORMAT, this, index,
-        len: len, attribute: attribute);
+    Delta formatDelta = _rules.apply(RuleType.FORMAT, this, index, len: len, attribute: attribute);
     if (formatDelta.isNotEmpty) {
       compose(formatDelta, ChangeSource.LOCAL);
       delta = delta.compose(formatDelta);
@@ -126,8 +124,7 @@ class Document {
     delta = _transform(delta);
     Delta originalDelta = toDelta();
     for (Operation op in delta.toList()) {
-      Style style =
-          op.attributes != null ? Style.fromJson(op.attributes) : null;
+      Style style = op.attributes != null ? Style.fromJson(op.attributes) : null;
 
       if (op.isInsert) {
         _root.insert(offset, _normalize(op.data), style);
@@ -178,10 +175,8 @@ class Document {
     return res;
   }
 
-  static void _handleImageInsert(
-      int i, List<Operation> ops, Operation op, Delta res) {
-    bool nextOpIsImage =
-        i + 1 < ops.length && ops[i + 1].isInsert && ops[i + 1].data is! String;
+  static void _handleImageInsert(int i, List<Operation> ops, Operation op, Delta res) {
+    bool nextOpIsImage = i + 1 < ops.length && ops[i + 1].isInsert && ops[i + 1].data is! String && op.data is String;
     if (nextOpIsImage && !(op.data as String).endsWith('\n')) {
       res.push(Operation.insert('\n', null));
     }
@@ -220,20 +215,15 @@ class Document {
     int offset = 0;
     for (final op in doc.toList()) {
       if (!op.isInsert) {
-        throw ArgumentError.value(doc,
-            'Document Delta can only contain insert operations but ${op.key} found.');
+        throw ArgumentError.value(doc, 'Document Delta can only contain insert operations but ${op.key} found.');
       }
-      final style =
-          op.attributes != null ? Style.fromJson(op.attributes) : null;
+      final style = op.attributes != null ? Style.fromJson(op.attributes) : null;
       final data = _normalize(op.data);
       _root.insert(offset, data, style);
       offset += op.length;
     }
     final node = _root.last;
-    if (node is Line &&
-        node.parent is! Block &&
-        node.style.isEmpty &&
-        _root.childCount > 1) {
+    if (node is Line && node.parent is! Block && node.style.isEmpty && _root.childCount > 1) {
       _root.remove(node);
     }
   }
@@ -249,9 +239,7 @@ class Document {
     }
 
     Delta delta = node.toDelta();
-    return delta.length == 1 &&
-        delta.first.data == '\n' &&
-        delta.first.key == 'insert';
+    return delta.length == 1 && delta.first.data == '\n' && delta.first.key == 'insert';
   }
 }
 
