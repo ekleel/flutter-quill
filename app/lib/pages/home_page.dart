@@ -24,7 +24,20 @@ Widget defaultEmbedBuilder(BuildContext context, leaf.Embed embed) {
     //   return EditorVideo(id: 'bczyP-kDwSA');
     //   break;
     default:
-      return Text('مرفق! ${embed.value.type}');
+      return AbsorbPointer(
+        absorbing: true,
+        child: Row(
+          children: [
+            Text('مرفق! ${embed.value.type}'),
+            ElevatedButton(
+              child: Icon(Icons.plus_one),
+              onPressed: () {
+                print('IconButton clicked!');
+              },
+            ),
+          ],
+        ),
+      );
   }
 }
 

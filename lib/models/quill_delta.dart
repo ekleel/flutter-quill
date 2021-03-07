@@ -76,7 +76,7 @@ class Operation {
           final key = int.parse((map.keys.first as String).replaceFirst('h', ''));
           attributes = {'header': key};
         } else if (map.containsKey('h4') || map.containsKey('h5') || map.containsKey('h6')) {
-          attributes = {'header': 'h3'};
+          attributes = {'header': 3};
         }
       }
 
