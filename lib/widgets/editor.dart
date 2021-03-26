@@ -372,7 +372,7 @@ class _QuillEditorSelectionGestureDetectorBuilder extends EditorTextSelectionGes
       return false;
     }
     Line line = result.node as Line;
-    containerNode.ChildQuery segmentResult = line.queryChild(result.offset, false);
+    containerNode.ChildQuery segmentResult = line.queryChild(result.offset, true);
     if (segmentResult.node == null) {
       if (line.length == 1) {
         // tapping when no text yet on this line
@@ -394,12 +394,12 @@ class _QuillEditorSelectionGestureDetectorBuilder extends EditorTextSelectionGes
       }
       return false;
     }
-    if (_flipListCheckbox(pos, line, segmentResult)) {
-      return true;
-    }
     if (getEditor().widget.onTap != null) {
       getEditor().widget.onTap(details, segment);
       return false;
+    }
+    if (_flipListCheckbox(pos, line, segmentResult)) {
+      return true;
     }
     return false;
   }

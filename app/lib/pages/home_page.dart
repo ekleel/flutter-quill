@@ -151,8 +151,8 @@ class _HomePageState extends State<HomePage> {
     try {
       // final result = await rootBundle.loadString('assets/sample_data.json');
       // final doc = Document.fromJson(jsonDecode(result));
-      // final doc = Document.fromJson(DELTA_SAMPLE);
-      final doc = Document()..insert(0, '');
+      final doc = Document.fromJson(DELTA_SAMPLE);
+      // final doc = Document()..insert(0, '');
       setState(() {
         _controller = QuillController(document: doc, selection: TextSelection.collapsed(offset: 0));
       });
@@ -252,7 +252,7 @@ class _HomePageState extends State<HomePage> {
               onTap: (details, segment) {
                 if (segment.value is BlockEmbed) {
                   final embed = segment.value as BlockEmbed;
-                  print('onTap embed: ${embed.data}');
+                  print('onTap embed: ${embed.type}');
                 }
               },
               customStyles: DefaultStyles(
