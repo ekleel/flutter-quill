@@ -48,11 +48,17 @@ class QuillController extends ChangeNotifier {
 
   void _handleHistoryChange(int len) {
     if (len != 0) {
-      // if (this.selection.extentOffset >= document.length) {
-      // // cursor exceeds the length of document, position it in the end
-      // updateSelection(
-      //     TextSelection.collapsed(offset: document.length), ChangeSource.LOCAL);
-      updateSelection(TextSelection.collapsed(offset: this.selection.baseOffset + len), ChangeSource.LOCAL);
+      final pLen = -len;
+      if (this.selection.extentOffset >= document.length) {
+        // cursor exceeds the length of document, position it in the end
+        updateSelection(TextSelection.collapsed(offset: document.length), ChangeSource.LOCAL);
+      } else {
+        updateSelection(
+          TextSelection.collapsed(
+              offset: this.selection.baseOffset < pLen ? this.selection.baseOffset : this.selection.baseOffset + len),
+          ChangeSource.LOCAL,
+        );
+      }
     } else {
       // no need to move cursor
       notifyListeners();

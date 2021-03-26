@@ -151,7 +151,8 @@ class _HomePageState extends State<HomePage> {
     try {
       // final result = await rootBundle.loadString('assets/sample_data.json');
       // final doc = Document.fromJson(jsonDecode(result));
-      final doc = Document.fromJson(DELTA_SAMPLE);
+      // final doc = Document.fromJson(DELTA_SAMPLE);
+      final doc = Document()..insert(0, '');
       setState(() {
         _controller = QuillController(document: doc, selection: TextSelection.collapsed(offset: 0));
       });
@@ -245,7 +246,7 @@ class _HomePageState extends State<HomePage> {
               placeholder: 'Add content',
               enableInteractiveSelection: true,
               expands: false,
-              padding: EdgeInsets.zero,
+              padding: EdgeInsets.only(top: 50.0),
               embedBuilder: defaultEmbedBuilder,
               textSelectionControls: materialTextSelectionControls,
               onTap: (details, segment) {
