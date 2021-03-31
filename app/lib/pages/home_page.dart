@@ -193,8 +193,8 @@ class _HomePageState extends State<HomePage> {
     try {
       // final result = await rootBundle.loadString('assets/sample_data.json');
       // final doc = Document.fromJson(jsonDecode(result));
-      // final doc = Document.fromJson(DELTA_SAMPLE);
-      final doc = Document()..insert(0, '');
+      final doc = Document.fromJson(DELTA_SAMPLE);
+      // final doc = Document()..insert(0, '');
       setState(() {
         _controller = QuillController(
             document: doc, selection: TextSelection.collapsed(offset: 0), mentionTriggers: _mentionTriggers);
@@ -378,15 +378,25 @@ class _HomePageState extends State<HomePage> {
               onMentionFetch: (trigger, value) async => _onMentionFetch(trigger, value),
               onMentionTap: _onMentionTap,
               mentionOverlayBuilder: (context) {
-                return Column(
-                  children: _suggestions
-                      .map(
-                        (item) => ListTile(
-                          onTap: () => _onMentionSuggestionSelected(item),
-                          title: Text(item['displayName']),
-                        ),
-                      )
-                      .toList(),
+                return Card(
+                  elevation: 4.0,
+                  child: ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    itemCount: _suggestions.length,
+                    separatorBuilder: (context, index) => const Divider(
+                      height: 0.0,
+                      indent: 20.0 / 1.5,
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = _suggestions[index];
+                      return ListTile(
+                        onTap: () => _onMentionSuggestionSelected(item),
+                        title: Text(item['displayName']),
+                      );
+                    },
+                  ),
                 );
               },
             ),

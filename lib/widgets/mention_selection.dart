@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_quill/widgets/controller.dart';
@@ -90,8 +92,8 @@ class _MentionSuggestionList extends StatelessWidget {
       renderObject.localToGlobal(renderObject.size.bottomRight(Offset.zero)),
     );
     final baseLineHeight = renderObject.preferredLineHeight(textEditingValue.selection.base);
-    final listMaxWidth = editingRegion.width / 2;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final listMaxWidth = editingRegion.width / 1.7;
+    final screenHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).viewInsets.bottom;
 
     var positionFromTop = endpoints[0].point.dy + editingRegion.top;
     var positionFromRight = editingRegion.width - endpoints[0].point.dx;
@@ -100,9 +102,14 @@ class _MentionSuggestionList extends StatelessWidget {
     if (positionFromTop + listMaxHeight > screenHeight) {
       positionFromTop = positionFromTop - listMaxHeight - baseLineHeight;
     }
+
+    // print(
+    //     'MentionSuggestionList - edit:${editingRegion.width}, max:$listMaxWidth - (r:$positionFromRight/l:$positionFromLeft)');
+
     if (positionFromRight + listMaxWidth > editingRegion.width) {
       positionFromRight = null;
-      positionFromLeft = endpoints[0].point.dx;
+      // positionFromLeft = endpoints[0].point.dx;
+      positionFromLeft = 5.0;
     }
 
     return Positioned(
@@ -110,7 +117,10 @@ class _MentionSuggestionList extends StatelessWidget {
       right: positionFromRight,
       left: positionFromLeft,
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: listMaxWidth, maxHeight: listMaxHeight),
+        constraints: BoxConstraints(
+          maxWidth: min(listMaxWidth, 215.0),
+          maxHeight: listMaxHeight,
+        ),
         child: overlayBuilder(context),
       ),
     );
