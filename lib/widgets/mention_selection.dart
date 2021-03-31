@@ -25,7 +25,7 @@ class MentionSuggestionOverlay {
   final Widget debugRequiredFor;
   final TextEditingValue textEditingValue;
   final void Function(String, String, String) onSelected;
-  final WidgetBuilder builder;
+  final WidgetBuilder overlayBuilder;
   OverlayEntry overlayEntry;
 
   MentionSuggestionOverlay({
@@ -34,7 +34,7 @@ class MentionSuggestionOverlay {
     @required this.context,
     @required this.renderObject,
     @required this.debugRequiredFor,
-    @required this.builder,
+    @required this.overlayBuilder,
     this.onSelected,
   });
 
@@ -45,7 +45,7 @@ class MentionSuggestionOverlay {
         renderObject: renderObject,
         textEditingValue: textEditingValue,
         onSelected: onSelected,
-        builder: builder,
+        overlayBuilder: overlayBuilder,
       ),
     );
     Overlay.of(context, rootOverlay: true, debugRequiredFor: debugRequiredFor).insert(overlayEntry);
@@ -71,14 +71,14 @@ class _MentionSuggestionList extends StatelessWidget {
   final RenderEditor renderObject;
   final TextEditingValue textEditingValue;
   final void Function(String, String, String) onSelected;
-  final WidgetBuilder builder;
+  final WidgetBuilder overlayBuilder;
 
   const _MentionSuggestionList({
     Key key,
     @required this.controller,
     @required this.renderObject,
     @required this.textEditingValue,
-    @required this.builder,
+    @required this.overlayBuilder,
     this.onSelected,
   }) : super(key: key);
 
@@ -111,18 +111,7 @@ class _MentionSuggestionList extends StatelessWidget {
       left: positionFromLeft,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: listMaxWidth, maxHeight: listMaxHeight),
-        child: _buildOverlayWidget(context),
-      ),
-    );
-  }
-
-  Widget _buildOverlayWidget(BuildContext context) {
-    return Card(
-      elevation: 4.0,
-      child: SingleChildScrollView(
-        child: IntrinsicWidth(
-          child: builder(context),
-        ),
+        child: overlayBuilder(context),
       ),
     );
   }

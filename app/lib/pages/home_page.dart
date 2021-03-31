@@ -377,7 +377,7 @@ class _HomePageState extends State<HomePage> {
               ),
               onMentionFetch: (trigger, value) async => _onMentionFetch(trigger, value),
               onMentionTap: _onMentionTap,
-              mentionBuilder: (context) {
+              mentionOverlayBuilder: (context) {
                 return Column(
                   children: _suggestions
                       .map(

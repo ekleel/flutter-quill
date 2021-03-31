@@ -106,7 +106,7 @@ class QuillEditor extends StatefulWidget {
   final TextSelectionControls textSelectionControls;
   final Future<void> Function(String trigger, String value) onMentionFetch;
   final ValueChanged<Map<String, dynamic>> onMentionTap;
-  final WidgetBuilder mentionBuilder;
+  final WidgetBuilder mentionOverlayBuilder;
 
   QuillEditor({
     @required this.controller,
@@ -132,7 +132,7 @@ class QuillEditor extends StatefulWidget {
     this.textSelectionControls,
     this.onMentionFetch,
     this.onMentionTap,
-    this.mentionBuilder,
+    this.mentionOverlayBuilder,
   })  : assert(controller != null),
         assert(scrollController != null),
         assert(scrollable != null),
@@ -251,7 +251,7 @@ class _QuillEditorState extends State<QuillEditor> implements EditorTextSelectio
       widget.embedBuilder,
       widget.onMentionFetch,
       widget.onMentionTap,
-      widget.mentionBuilder,
+      widget.mentionOverlayBuilder,
     );
 
     return _selectionGestureDetectorBuilder.build(

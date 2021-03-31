@@ -60,7 +60,7 @@ class RawEditor extends StatefulWidget {
   final EmbedBuilder embedBuilder;
   final Future<void> Function(String trigger, String value) onMentionFetch;
   final ValueChanged<Map<String, dynamic>> onMentionTap;
-  final WidgetBuilder mentionBuilder;
+  final WidgetBuilder mentionOverlayBuilder;
 
   RawEditor(
     Key key,
@@ -91,7 +91,7 @@ class RawEditor extends StatefulWidget {
     this.embedBuilder,
     this.onMentionFetch,
     this.onMentionTap,
-    this.mentionBuilder,
+    this.mentionOverlayBuilder,
   )   : assert(controller != null, 'controller cannot be null'),
         assert(focusNode != null, 'focusNode cannot be null'),
         assert(scrollable || scrollController != null, 'scrollController cannot be null'),
@@ -916,7 +916,7 @@ class RawEditorState extends EditorState
           textEditingValue: textEditingValue,
           renderObject: getRenderEditor(),
           debugRequiredFor: widget,
-          builder: widget.mentionBuilder,
+          overlayBuilder: widget.mentionOverlayBuilder,
         );
         _suggestionOverlay.showSuggestions();
       });
