@@ -105,7 +105,7 @@ class QuillEditor extends StatefulWidget {
   final EmbedBuilder embedBuilder;
   final TextSelectionControls textSelectionControls;
   final Future<void> Function(String trigger, String value) onMentionFetch;
-  final ValueChanged<Map<String, String>> onMentionClicked;
+  final ValueChanged<Map<String, String>> onMentionTap;
   final WidgetBuilder mentionBuilder;
 
   QuillEditor({
@@ -131,7 +131,7 @@ class QuillEditor extends StatefulWidget {
     @required this.embedBuilder,
     this.textSelectionControls,
     this.onMentionFetch,
-    this.onMentionClicked,
+    this.onMentionTap,
     this.mentionBuilder,
   })  : assert(controller != null),
         assert(scrollController != null),
@@ -250,7 +250,7 @@ class _QuillEditorState extends State<QuillEditor> implements EditorTextSelectio
       widget.scrollPhysics,
       widget.embedBuilder,
       widget.onMentionFetch,
-      widget.onMentionClicked,
+      widget.onMentionTap,
       widget.mentionBuilder,
     );
 
@@ -358,9 +358,9 @@ class _QuillEditorSelectionGestureDetectorBuilder extends EditorTextSelectionGes
       return false;
     }
     if (segment.style.containsKey(Attribute.mention.key)) {
-      final Map<String, String> mention = segment.style.attributes[Attribute.mention.key].value;
-      if (getEditor().widget.readOnly && getEditor().widget.onMentionClicked != null && mention != null) {
-        getEditor().widget.onMentionClicked(mention);
+      final Map<String, dynamic> mention = segment.style.attributes[Attribute.mention.key].value;
+      if (getEditor().widget.readOnly && getEditor().widget.onMentionTap != null && mention != null) {
+        getEditor().widget.onMentionTap(mention);
       }
       return false;
     }

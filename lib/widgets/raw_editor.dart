@@ -59,7 +59,7 @@ class RawEditor extends StatefulWidget {
   final ScrollPhysics scrollPhysics;
   final EmbedBuilder embedBuilder;
   final Future<void> Function(String trigger, String value) onMentionFetch;
-  final ValueChanged<Map<String, String>> onMentionClicked;
+  final ValueChanged<Map<String, String>> onMentionTap;
   final WidgetBuilder mentionBuilder;
 
   RawEditor(
@@ -90,7 +90,7 @@ class RawEditor extends StatefulWidget {
     this.scrollPhysics,
     this.embedBuilder,
     this.onMentionFetch,
-    this.onMentionClicked,
+    this.onMentionTap,
     this.mentionBuilder,
   )   : assert(controller != null, 'controller cannot be null'),
         assert(focusNode != null, 'focusNode cannot be null'),

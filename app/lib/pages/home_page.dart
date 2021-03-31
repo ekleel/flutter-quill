@@ -222,8 +222,8 @@ class _HomePageState extends State<HomePage> {
     _suggestions = suggestions;
   }
 
-  void _onMentionClicked(Map<String, String> value) {
-    print('onMentionClicked: $value');
+  void _onMentionTap(Map<String, String> value) {
+    print('onMentionTap: $value');
   }
 
   void _onMentionSuggestionSelected(Map<String, String> item) {
@@ -371,8 +371,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               onMentionFetch: (trigger, value) async => _onMentionFetch(trigger, value),
-              onMentionClicked: _onMentionClicked,
-              // onMentionSuggestionSelected: _onMentionSuggestionSelected,
+              onMentionTap: _onMentionTap,
               mentionBuilder: (context) {
                 return Column(
                   children: _suggestions
