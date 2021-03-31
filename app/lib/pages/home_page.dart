@@ -181,7 +181,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  QuillController _controller;
+  QuillController<Map<String, String>> _controller;
   final FocusNode _focusNode = FocusNode();
 
   String _lastMentionValue;
@@ -405,22 +405,22 @@ class _HomePageState extends State<HomePage> {
                     ),
                     onMentionFetch: (trigger, value) async => _onMentionFetch(trigger, value),
                     onMentionTap: _onMentionTap,
-                    mentionOverlayBuilder: (context, suggestions, isLoading) {
-                      print('home mentionOverlayBuilder suggestions: $isLoading - ${suggestions.length}');
+                    mentionOverlayBuilder: (context) {
+                      print('home mentionOverlayBuilder suggestions: ${_controller.isMentionLoading} - ${_controller.mentionSuggestions.length}');
                       return Card(
                         elevation: 4.0,
-                        child: !isLoading
+                        child: !_controller.isMentionLoading
                             ? ListView.separated(
                                 physics: const BouncingScrollPhysics(),
                                 shrinkWrap: true,
                                 padding: EdgeInsets.zero,
-                                itemCount: suggestions.length,
+                                itemCount: _controller.mentionSuggestions.length,
                                 separatorBuilder: (context, index) => const Divider(
                                   height: 0.0,
                                   indent: 20.0 / 1.5,
                                 ),
                                 itemBuilder: (context, index) {
-                                  final item = suggestions[index];
+                                  final item = _controller.mentionSuggestions[index];
                                   return ListTile(
                                     onTap: () => _onMentionSuggestionSelected(item),
                                     title: Text(item['displayName']),

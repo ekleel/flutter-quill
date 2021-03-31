@@ -9,7 +9,7 @@ import 'package:flutter_quill/models/quill_delta.dart';
 import 'package:flutter_quill/utils/diff_delta.dart';
 import 'package:tuple/tuple.dart';
 
-class QuillController extends ChangeNotifier {
+class QuillController<MS> extends ChangeNotifier {
   final Document document;
   TextSelection selection;
   Style toggledStyle = Style();
@@ -182,7 +182,7 @@ class QuillController extends ChangeNotifier {
   }
 
   final List<String> _mentionTriggers;
-  List<Map<String, String>> _mentionSuggestions = [];
+  List<MS> _mentionSuggestions = [];
   bool _isInMentionMode = false;
   bool _isMentionLoading = false;
   String _mentionedText;
@@ -190,13 +190,13 @@ class QuillController extends ChangeNotifier {
 
   bool get isInMentionMode => _isInMentionMode;
   bool get isMentionLoading => _isMentionLoading;
-  List<Map<String, String>> get mentionSuggestions => _mentionSuggestions;
+  List<MS> get mentionSuggestions => _mentionSuggestions;
   String get mentionTrigger => _mentionTrigger;
   String get mentionedText => _mentionedText;
 
   bool get hasMention => isInMentionMode && mentionTrigger != null && mentionedText != null;
 
-  void updateMentionSuggestions(List<Map<String, String>> suggestions) {
+  void updateMentionSuggestions(List<MS> suggestions) {
     _mentionSuggestions = suggestions ?? [];
     notifyListeners();
   }

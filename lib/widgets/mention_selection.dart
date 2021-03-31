@@ -8,8 +8,8 @@ import 'package:flutter_quill/widgets/editor.dart';
 /// Builder function for mention suggestions for user.
 typedef MentionSuggestionWidgetBuilder = Widget Function(
   BuildContext context,
-  List<Map<String, String>> suggestions,
-  bool isLoading,
+  // List<T> suggestions,
+  // bool isLoading,
 );
 
 class MentionSuggestionOverlay {
@@ -113,11 +113,7 @@ class _MentionSuggestionList extends StatelessWidget {
           maxWidth: min(listMaxWidth, 215.0),
           maxHeight: listMaxHeight,
         ),
-        child: overlayBuilder(
-          context,
-          controller.mentionSuggestions,
-          controller.isMentionLoading,
-        ),
+        child: overlayBuilder(context),
       ),
     );
   }
