@@ -59,7 +59,7 @@ class RawEditor extends StatefulWidget {
   final ScrollPhysics scrollPhysics;
   final EmbedBuilder embedBuilder;
   final Future<void> Function(String trigger, String value) onMentionFetch;
-  final ValueChanged<Map<String, String>> onMentionTap;
+  final ValueChanged<Map<String, dynamic>> onMentionTap;
   final WidgetBuilder mentionBuilder;
 
   RawEditor(

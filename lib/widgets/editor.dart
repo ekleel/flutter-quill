@@ -105,7 +105,7 @@ class QuillEditor extends StatefulWidget {
   final EmbedBuilder embedBuilder;
   final TextSelectionControls textSelectionControls;
   final Future<void> Function(String trigger, String value) onMentionFetch;
-  final ValueChanged<Map<String, String>> onMentionTap;
+  final ValueChanged<Map<String, dynamic>> onMentionTap;
   final WidgetBuilder mentionBuilder;
 
   QuillEditor({

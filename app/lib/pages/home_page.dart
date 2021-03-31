@@ -222,7 +222,7 @@ class _HomePageState extends State<HomePage> {
     _suggestions = suggestions;
   }
 
-  void _onMentionTap(Map<String, String> value) {
+  void _onMentionTap(Map<String, dynamic> value) {
     print('onMentionTap: $value');
   }
 
