@@ -406,10 +406,11 @@ class _HomePageState extends State<HomePage> {
                     onMentionFetch: (trigger, value) async => _onMentionFetch(trigger, value),
                     onMentionTap: _onMentionTap,
                     mentionOverlayBuilder: (context) {
-                      print('home mentionOverlayBuilder suggestions: ${_controller.isMentionLoading} - ${_controller.mentionSuggestions.length}');
+                      print(
+                          'home mentionOverlayBuilder suggestions: ${_controller.isMentionLoading} - ${_controller.mentionSuggestions.length}');
                       return Card(
                         elevation: 4.0,
-                        child: !_controller.isMentionLoading
+                        child: !_controller.isMentionLoading && _controller.mentionSuggestions.isNotEmpty
                             ? ListView.separated(
                                 physics: const BouncingScrollPhysics(),
                                 shrinkWrap: true,
@@ -427,7 +428,9 @@ class _HomePageState extends State<HomePage> {
                                   );
                                 },
                               )
-                            : Text('Loading!'),
+                            : _controller.isMentionLoading
+                                ? Text('Loading!')
+                                : Text('no results!'),
                       );
                     },
                   ),

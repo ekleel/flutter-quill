@@ -237,6 +237,8 @@ class QuillController<MS> extends ChangeNotifier {
 
   void resetMention() {
     _isInMentionMode = false;
+    _isMentionLoading = false;
+    _mentionSuggestions = [];
     _mentionTrigger = null;
     _mentionedText = null;
     notifyListeners();
