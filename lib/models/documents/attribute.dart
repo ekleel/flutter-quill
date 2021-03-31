@@ -1,4 +1,4 @@
-import 'package:quiver_hashcode/hashcode.dart';
+import 'package:quiver/core.dart';
 
 enum AttributeScope {
   INLINE, // refer to https://quilljs.com/docs/formats/#inline
@@ -22,6 +22,7 @@ class Attribute<T> {
     Attribute.font.key: Attribute.font,
     Attribute.size.key: Attribute.size,
     Attribute.link.key: Attribute.link,
+    Attribute.mention.key: Attribute.mention,
     Attribute.color.key: Attribute.color,
     Attribute.background.key: Attribute.background,
     Attribute.placeholder.key: Attribute.placeholder,
@@ -49,6 +50,8 @@ class Attribute<T> {
   static final SizeAttribute size = SizeAttribute(null);
 
   static final LinkAttribute link = LinkAttribute(null);
+
+  static final MentionAttribute mention = MentionAttribute();
 
   static final ColorAttribute color = ColorAttribute(null);
 
@@ -80,6 +83,7 @@ class Attribute<T> {
     Attribute.underline.key,
     Attribute.strikeThrough.key,
     Attribute.link.key,
+    Attribute.mention.key,
     Attribute.color.key,
     Attribute.background.key,
     Attribute.placeholder.key,
@@ -175,9 +179,7 @@ class Attribute<T> {
     if (identical(this, other)) return true;
     if (other is! Attribute<T>) return false;
     Attribute<T> typedOther = other;
-    return key == typedOther.key &&
-        scope == typedOther.scope &&
-        value == typedOther.value;
+    return key == typedOther.key && scope == typedOther.scope && value == typedOther.value;
   }
 
   @override
@@ -217,13 +219,24 @@ class LinkAttribute extends Attribute<String> {
   LinkAttribute(String val) : super('link', AttributeScope.INLINE, val);
 }
 
+class MentionAttribute extends Attribute<Map<String, String>> {
+  MentionAttribute({
+    String uid,
+    String displayName,
+    String userName,
+  }) : super('mention', AttributeScope.INLINE, {
+          "uid": uid,
+          "displayName": displayName,
+          "userName": userName,
+        });
+}
+
 class ColorAttribute extends Attribute<String> {
   ColorAttribute(String val) : super('color', AttributeScope.INLINE, val);
 }
 
 class BackgroundAttribute extends Attribute<String> {
-  BackgroundAttribute(String val)
-      : super('background', AttributeScope.INLINE, val);
+  BackgroundAttribute(String val) : super('background', AttributeScope.INLINE, val);
 }
 
 /// This is custom attribute for hint

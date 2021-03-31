@@ -38,10 +38,12 @@ class Rules {
     PreserveLineStyleOnSplitRule(),
     ResetLineFormatOnNewLineRule(),
     AutoFormatLinksRule(),
+    // AutoFormatMentionsRule(),
     PreserveInlineStylesRule(),
     CatchAllInsertRule(),
     EnsureEmbedLineRule(),
     PreserveLineStyleOnMergeRule(),
+    HandleMentionDeleteRule(),
     CatchAllDeleteRule(),
   ]);
 

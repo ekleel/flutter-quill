@@ -12,11 +12,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  quiver_hashcode: ^2.0.0
+  quiver: ^3.0.0
   collection: ^1.15.0
-  tuple: ^2.0.0-nullsafety.0
-  universal_html: ^1.2.4
-  # string_validator: ^0.2.0-nullsafety.0
+  tuple: ^2.0.0
   flutter_keyboard_visibility: ^5.0.0
 
 

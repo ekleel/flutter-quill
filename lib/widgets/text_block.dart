@@ -80,7 +80,7 @@ class EditableTextBlock extends StatelessWidget {
     int count = block.children.length;
     var children = <Widget>[];
     int index = 0;
-    for (Line line in block.children) {
+    for (Line line in Iterable.castFrom<dynamic, Line>(block.children)) {
       index++;
       EditableTextLine editableTextLine = EditableTextLine(
           line,

@@ -37,8 +37,7 @@ class DefaultTextBlockStyle {
 
   final BoxDecoration decoration;
 
-  DefaultTextBlockStyle(
-      this.style, this.verticalSpacing, this.lineSpacing, this.decoration);
+  DefaultTextBlockStyle(this.style, this.verticalSpacing, this.lineSpacing, this.decoration);
 }
 
 class DefaultStyles {
@@ -54,6 +53,7 @@ class DefaultStyles {
   final TextStyle sizeLarge; // 'large'
   final TextStyle sizeHuge; // 'huge'
   final TextStyle link;
+  final TextStyle mention;
   final DefaultTextBlockStyle placeHolder;
   final DefaultTextBlockStyle lists;
   final DefaultTextBlockStyle quote;
@@ -71,6 +71,7 @@ class DefaultStyles {
       this.underline,
       this.strikeThrough,
       this.link,
+      this.mention,
       this.placeHolder,
       this.lists,
       this.quote,
@@ -136,13 +137,16 @@ class DefaultStyles {
             Tuple2(8.0, 0.0),
             Tuple2(0.0, 0.0),
             null),
-        paragraph: DefaultTextBlockStyle(
-            baseStyle, Tuple2(0.0, 0.0), Tuple2(0.0, 0.0), null),
+        paragraph: DefaultTextBlockStyle(baseStyle, Tuple2(0.0, 0.0), Tuple2(0.0, 0.0), null),
         bold: TextStyle(fontWeight: FontWeight.bold),
         italic: TextStyle(fontStyle: FontStyle.italic),
         underline: TextStyle(decoration: TextDecoration.underline),
         strikeThrough: TextStyle(decoration: TextDecoration.lineThrough),
         link: TextStyle(
+          color: themeData.accentColor,
+          decoration: TextDecoration.underline,
+        ),
+        mention: TextStyle(
           color: themeData.accentColor,
           decoration: TextDecoration.underline,
         ),
@@ -155,8 +159,7 @@ class DefaultStyles {
             Tuple2(0.0, 0.0),
             Tuple2(0.0, 0.0),
             null),
-        lists: DefaultTextBlockStyle(
-            baseStyle, baseSpacing, Tuple2(0.0, 6.0), null),
+        lists: DefaultTextBlockStyle(baseStyle, baseSpacing, Tuple2(0.0, 6.0), null),
         quote: DefaultTextBlockStyle(
             TextStyle(color: baseStyle.color.withOpacity(0.6)),
             baseSpacing,
@@ -179,10 +182,8 @@ class DefaultStyles {
               color: Colors.grey.shade50,
               borderRadius: BorderRadius.circular(2),
             )),
-        indent: DefaultTextBlockStyle(
-            baseStyle, baseSpacing, Tuple2(0.0, 6.0), null),
-        align: DefaultTextBlockStyle(
-            baseStyle, Tuple2(0.0, 0.0), Tuple2(0.0, 0.0), null),
+        indent: DefaultTextBlockStyle(baseStyle, baseSpacing, Tuple2(0.0, 6.0), null),
+        align: DefaultTextBlockStyle(baseStyle, Tuple2(0.0, 0.0), Tuple2(0.0, 0.0), null),
         sizeSmall: TextStyle(fontSize: 10.0),
         sizeLarge: TextStyle(fontSize: 18.0),
         sizeHuge: TextStyle(fontSize: 22.0));
@@ -199,6 +200,7 @@ class DefaultStyles {
         underline: other.underline ?? this.underline,
         strikeThrough: other.strikeThrough ?? this.strikeThrough,
         link: other.link ?? this.link,
+        mention: other.mention ?? this.mention,
         placeHolder: other.placeHolder ?? this.placeHolder,
         lists: other.lists ?? this.lists,
         quote: other.quote ?? this.quote,

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -17,6 +18,7 @@ import 'package:flutter_quill/models/documents/nodes/line.dart';
 import 'package:flutter_quill/models/documents/nodes/node.dart';
 import 'package:flutter_quill/utils/diff_delta.dart';
 import 'package:flutter_quill/widgets/default_styles.dart';
+import 'package:flutter_quill/widgets/mention_selection.dart';
 import 'package:flutter_quill/widgets/proxy.dart';
 import 'package:flutter_quill/widgets/text_block.dart';
 import 'package:flutter_quill/widgets/text_line.dart';
@@ -56,35 +58,41 @@ class RawEditor extends StatefulWidget {
   final bool enableInteractiveSelection;
   final ScrollPhysics scrollPhysics;
   final EmbedBuilder embedBuilder;
+  final Future<void> Function(String trigger, String value) onMentionFetch;
+  final ValueChanged<Map<String, String>> onMentionClicked;
+  final WidgetBuilder mentionBuilder;
 
   RawEditor(
-      Key key,
-      this.controller,
-      this.focusNode,
-      this.scrollController,
-      this.scrollable,
-      this.padding,
-      this.readOnly,
-      this.placeholder,
-      this.onLaunchUrl,
-      this.onTap,
-      this.toolbarOptions,
-      this.showSelectionHandles,
-      bool showCursor,
-      this.cursorStyle,
-      this.textCapitalization,
-      this.maxHeight,
-      this.minHeight,
-      this.customStyles,
-      this.expands,
-      this.autoFocus,
-      this.selectionColor,
-      this.selectionCtrls,
-      this.keyboardAppearance,
-      this.enableInteractiveSelection,
-      this.scrollPhysics,
-      this.embedBuilder)
-      : assert(controller != null, 'controller cannot be null'),
+    Key key,
+    this.controller,
+    this.focusNode,
+    this.scrollController,
+    this.scrollable,
+    this.padding,
+    this.readOnly,
+    this.placeholder,
+    this.onLaunchUrl,
+    this.onTap,
+    this.toolbarOptions,
+    this.showSelectionHandles,
+    bool showCursor,
+    this.cursorStyle,
+    this.textCapitalization,
+    this.maxHeight,
+    this.minHeight,
+    this.customStyles,
+    this.expands,
+    this.autoFocus,
+    this.selectionColor,
+    this.selectionCtrls,
+    this.keyboardAppearance,
+    this.enableInteractiveSelection,
+    this.scrollPhysics,
+    this.embedBuilder,
+    this.onMentionFetch,
+    this.onMentionClicked,
+    this.mentionBuilder,
+  )   : assert(controller != null, 'controller cannot be null'),
         assert(focusNode != null, 'focusNode cannot be null'),
         assert(scrollable || scrollController != null, 'scrollController cannot be null'),
         assert(selectionColor != null, 'selectionColor cannot be null'),
@@ -127,6 +135,7 @@ class RawEditorState extends EditorState
   bool _didAutoFocus = false;
   bool _keyboardVisible = false;
   DefaultStyles _styles;
+  MentionSuggestionOverlay _suggestionOverlay;
   final ClipboardStatusNotifier _clipboardStatus = ClipboardStatusNotifier();
   final LayerLink _toolbarLayerLink = LayerLink();
   final LayerLink _startHandleLayerLink = LayerLink();
@@ -639,13 +648,17 @@ class RawEditorState extends EditorState
       handleDelete,
     );
 
-    _keyboardVisibilityController = KeyboardVisibilityController();
-    _keyboardVisibilitySubscription = _keyboardVisibilityController.onChange.listen((bool visible) {
-      _keyboardVisible = visible;
-      if (visible) {
-        _onChangeTextEditingValue();
-      }
-    });
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux || Platform.isFuchsia) {
+      _keyboardVisible = true;
+    } else {
+      _keyboardVisibilityController = KeyboardVisibilityController();
+      _keyboardVisibilitySubscription = _keyboardVisibilityController.onChange.listen((bool visible) {
+        _keyboardVisible = visible;
+        if (visible) {
+          _onChangeTextEditingValue();
+        }
+      });
+    }
 
     _focusAttachment =
         widget.focusNode.attach(context, onKey: (node, event) => _keyboardListener.handleRawKeyEvent(event));
@@ -799,7 +812,7 @@ class RawEditorState extends EditorState
   @override
   void dispose() {
     closeConnectionIfNeeded();
-    _keyboardVisibilitySubscription.cancel();
+    _keyboardVisibilitySubscription?.cancel();
     assert(!hasConnection);
     _selectionOverlay?.dispose();
     _selectionOverlay = null;
@@ -814,6 +827,7 @@ class RawEditorState extends EditorState
 
   _updateSelectionOverlayForScroll() {
     _selectionOverlay?.markNeedsBuild();
+    _suggestionOverlay?.updateForScroll();
   }
 
   _didChangeTextEditingValue() {
@@ -837,7 +851,10 @@ class RawEditorState extends EditorState
       _cursorCont.startCursorTimer();
     }
 
-    SchedulerBinding.instance.addPostFrameCallback((Duration _) => _updateOrDisposeSelectionOverlayIfNeeded());
+    SchedulerBinding.instance.addPostFrameCallback((Duration _) {
+      _updateOrDisposeSelectionOverlayIfNeeded();
+      _updateOrDisposeSuggestionOverlayIfNeeded();
+    });
     if (!mounted) return;
     setState(() {
       // Use widget.controller.value in build()
@@ -859,21 +876,55 @@ class RawEditorState extends EditorState
 
       if (widget.selectionCtrls != null) {
         _selectionOverlay = EditorTextSelectionOverlay(
-            textEditingValue,
-            false,
-            context,
-            widget,
-            _toolbarLayerLink,
-            _startHandleLayerLink,
-            _endHandleLayerLink,
-            getRenderEditor(),
-            widget.selectionCtrls,
-            this,
-            DragStartBehavior.start,
-            null,
-            _clipboardStatus);
+          textEditingValue,
+          false,
+          context,
+          widget,
+          _toolbarLayerLink,
+          _startHandleLayerLink,
+          _endHandleLayerLink,
+          getRenderEditor(),
+          widget.selectionCtrls,
+          this,
+          DragStartBehavior.start,
+          null,
+          _clipboardStatus,
+        );
         _selectionOverlay.handlesVisible = _shouldShowSelectionHandles();
         _selectionOverlay.showHandles();
+      }
+    }
+  }
+
+  void _updateOrDisposeSuggestionOverlayIfNeeded() {
+    if (widget.controller.isInMentioningMode) {
+      SchedulerBinding.instance.addPostFrameCallback((Duration _) {
+        if (_suggestionOverlay != null) {
+          _suggestionOverlay.overlayEntry.remove();
+        }
+        if (widget.controller.hasMention) {
+          widget.onMentionFetch(
+            widget.controller.mentionTrigger,
+            widget.controller.mentionedText,
+          );
+        }
+        _suggestionOverlay = MentionSuggestionOverlay(
+          context: context,
+          controller: widget.controller,
+          textEditingValue: textEditingValue,
+          renderObject: getRenderEditor(),
+          debugRequiredFor: widget,
+          // onSelected: _handleMentionSuggestionSelected,
+          builder: widget.mentionBuilder,
+        );
+        _suggestionOverlay.showSuggestions();
+      });
+    } else {
+      if (_suggestionOverlay != null) {
+        SchedulerBinding.instance.addPostFrameCallback((Duration _) {
+          _suggestionOverlay?.hide();
+          _suggestionOverlay = null;
+        });
       }
     }
   }
@@ -1010,7 +1061,10 @@ class RawEditorState extends EditorState
   }
 
   Future<bool> __isItCut(TextEditingValue value) async {
-    final ClipboardData data = await Clipboard.getData(Clipboard.kTextPlain);
+    ClipboardData data = await Clipboard.getData(Clipboard.kTextPlain);
+    if (data == null) {
+      return false;
+    }
     return textEditingValue.text.length - value.text.length == data.text.length;
   }
 

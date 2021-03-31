@@ -99,6 +99,9 @@ int getPositionDelta(Delta user, Delta actual) {
       if (operationTxt.startsWith('\n')) {
         continue;
       }
+      if (operationTxt.startsWith('@')) {
+        break;
+      }
       diff += actualOperation.length;
     }
   }

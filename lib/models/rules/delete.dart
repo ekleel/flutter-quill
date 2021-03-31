@@ -20,8 +20,7 @@ class CatchAllDeleteRule extends DeleteRule {
   const CatchAllDeleteRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     return Delta()
       ..retain(index)
       ..delete(len);
@@ -32,8 +31,7 @@ class PreserveLineStyleOnMergeRule extends DeleteRule {
   const PreserveLineStyleOnMergeRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     DeltaIterator itr = DeltaIterator(document);
     itr.skip(index);
     Operation op = itr.next(1);
@@ -60,8 +58,7 @@ class PreserveLineStyleOnMergeRule extends DeleteRule {
 
       Map<String, dynamic> attributes = op.attributes == null
           ? null
-          : op.attributes.map<String, dynamic>((String key, dynamic value) =>
-              MapEntry<String, dynamic>(key, null));
+          : op.attributes.map<String, dynamic>((String key, dynamic value) => MapEntry<String, dynamic>(key, null));
 
       if (isNotPlain) {
         attributes ??= <String, dynamic>{};
@@ -78,15 +75,13 @@ class EnsureEmbedLineRule extends DeleteRule {
   const EnsureEmbedLineRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     DeltaIterator itr = DeltaIterator(document);
 
     Operation op = itr.skip(index);
     int indexDelta = 0, lengthDelta = 0, remain = len;
     bool embedFound = op != null && op.data is! String;
-    bool hasLineBreakBefore =
-        !embedFound && (op == null || (op?.data as String).endsWith('\n'));
+    bool hasLineBreakBefore = !embedFound && (op == null || (op?.data as String).endsWith('\n'));
     if (embedFound) {
       Operation candidate = itr.next(1);
       remain--;
@@ -103,8 +98,7 @@ class EnsureEmbedLineRule extends DeleteRule {
     }
 
     op = itr.skip(remain);
-    if (op != null &&
-        (op?.data is String ? op.data as String : '').endsWith('\n')) {
+    if (op != null && (op?.data is String ? op.data as String : '').endsWith('\n')) {
       Operation candidate = itr.next(1);
       if (candidate.data is! String && !hasLineBreakBefore) {
         embedFound = true;
@@ -119,5 +113,43 @@ class EnsureEmbedLineRule extends DeleteRule {
     return Delta()
       ..retain(index + indexDelta)
       ..delete(len + lengthDelta);
+  }
+}
+
+class HandleMentionDeleteRule extends DeleteRule {
+  const HandleMentionDeleteRule();
+
+  @override
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
+    final iter = DeltaIterator(document);
+
+    final previous = iter.skip(index);
+    final previousAttributes = previous.attributes ?? const <String, dynamic>{};
+    final previousText = previous.data is String ? previous.data as String : '';
+
+    final next = (iter..skip(len)).next();
+    final nextAttributes = next.attributes ?? const <String, dynamic>{};
+    final nextText = next.data is String ? next.data as String : '';
+
+    var delta = Delta();
+
+    if (previousAttributes.containsKey(Attribute.mention.key)) {
+      delta = delta
+        ..retain(index - previousText.length)
+        ..delete(previousText.length)
+        ..insert(previousText);
+    } else {
+      delta..retain(index);
+    }
+
+    delta = delta..delete(len);
+
+    if (nextAttributes.containsKey(Attribute.mention.key)) {
+      delta = delta
+        ..delete(nextText.length)
+        ..insert(nextText);
+    }
+
+    return delta;
   }
 }

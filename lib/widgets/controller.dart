@@ -14,8 +14,12 @@ class QuillController extends ChangeNotifier {
   TextSelection selection;
   Style toggledStyle = Style();
 
-  QuillController({@required this.document, @required this.selection})
-      : assert(document != null),
+  QuillController({
+    @required this.document,
+    @required this.selection,
+    List<String> mentionTriggers,
+  })  : _mentionTriggers = mentionTriggers ?? [],
+        assert(document != null),
         assert(selection != null);
 
   factory QuillController.basic() {
@@ -81,12 +85,16 @@ class QuillController extends ChangeNotifier {
 
     Delta delta;
     if (len > 0 || data is! String || (data as String).isNotEmpty) {
-      try {
-        delta = document.replace(index, len, data);
-      } catch (e) {
-        rethrow;
+      delta = document.replace(index, len, data);
+      bool shouldRetainDelta = toggledStyle.isNotEmpty && delta.isNotEmpty && delta.length <= 2 && delta.last.isInsert;
+      if (shouldRetainDelta && toggledStyle.isNotEmpty && delta.length == 2 && delta.last.data == '\n') {
+        // if all attributes are inline, shouldRetainDelta should be false
+        final anyAttributeNotInline = toggledStyle.values.any((attr) => !attr.isInline);
+        if (!anyAttributeNotInline) {
+          shouldRetainDelta = false;
+        }
       }
-      if (delta != null && toggledStyle.isNotEmpty && delta.isNotEmpty && delta.length <= 2 && delta.last.isInsert) {
+      if (shouldRetainDelta) {
         Delta retainDelta = Delta()..retain(index)..retain(data is String ? data.length : 1, toggledStyle.toJson());
         document.compose(retainDelta, ChangeSource.LOCAL);
       }
@@ -97,24 +105,21 @@ class QuillController extends ChangeNotifier {
       if (delta == null || delta.isEmpty) {
         _updateSelection(textSelection, ChangeSource.LOCAL);
       } else {
-        try {
-          Delta user = Delta()
-            ..retain(index)
-            ..insert(data)
-            ..delete(len);
-          int positionDelta = getPositionDelta(user, delta);
-          _updateSelection(
-            textSelection.copyWith(
-              baseOffset: textSelection.baseOffset + positionDelta,
-              extentOffset: textSelection.extentOffset + positionDelta,
-            ),
-            ChangeSource.LOCAL,
-          );
-        } catch (e) {
-          throw e;
-        }
+        Delta user = Delta()
+          ..retain(index)
+          ..insert(data)
+          ..delete(len);
+        int positionDelta = getPositionDelta(user, delta);
+        _updateSelection(
+          textSelection.copyWith(
+            baseOffset: textSelection.baseOffset + positionDelta,
+            extentOffset: textSelection.extentOffset + positionDelta,
+          ),
+          ChangeSource.LOCAL,
+        );
       }
     }
+    _checkForMentionTriggers();
     notifyListeners();
   }
 
@@ -130,6 +135,7 @@ class QuillController extends ChangeNotifier {
     if (selection != adjustedSelection) {
       _updateSelection(adjustedSelection, ChangeSource.LOCAL);
     }
+    _checkForMentionTriggers();
     notifyListeners();
   }
 
@@ -172,5 +178,85 @@ class QuillController extends ChangeNotifier {
     int end = document.length - 1;
     selection = selection.copyWith(
         baseOffset: math.min(selection.baseOffset, end), extentOffset: math.min(selection.extentOffset, end));
+    // _checkForMentionTriggers();
+  }
+
+  final List<String> _mentionTriggers;
+  bool _isInMentioningMode = false;
+  String _mentionedText;
+  String _mentionTrigger;
+
+  bool get isInMentioningMode => _isInMentioningMode;
+  String get mentionTrigger => _mentionTrigger;
+  String get mentionedText => _mentionedText;
+
+  bool get hasMention => isInMentioningMode && mentionTrigger != null && mentionedText != null;
+
+  void updateMention(String trigger, String value) {
+    _isInMentioningMode = true;
+    _mentionTrigger = trigger;
+    _mentionedText = value;
+    notifyListeners();
+  }
+
+  void addMention(Attribute attribute, String replacement) {
+    final mentionStartIndex = selection.end - mentionedText.length - 1;
+    final mentionedTextLength = mentionedText.length + 1;
+    final replacementText = mentionTrigger + replacement + ' ';
+
+    replaceText(
+      mentionStartIndex,
+      mentionedTextLength,
+      replacementText,
+      TextSelection.collapsed(
+        offset: mentionStartIndex + replacementText.length,
+      ),
+    );
+    formatText(
+      mentionStartIndex,
+      replacementText.length - 1,
+      attribute,
+    );
+
+    resetMention();
+  }
+
+  void resetMention() {
+    _isInMentioningMode = false;
+    _mentionTrigger = null;
+    _mentionedText = null;
+    notifyListeners();
+  }
+
+  /// Checks if collapsed cursor is after a mention trigger
+  /// which isn't submitted yet
+  void _checkForMentionTriggers() {
+    resetMention();
+
+    if (_mentionTriggers.isEmpty || !selection.isCollapsed) {
+      return;
+    }
+
+    final plainText = document.toPlainText();
+    final indexOfLastMentionTrigger =
+        plainText.substring(0, selection.end).lastIndexOf(RegExp(_mentionTriggers.join('|')));
+
+    if (indexOfLastMentionTrigger < 0) {
+      return;
+    }
+
+    if (plainText.substring(indexOfLastMentionTrigger, selection.end).contains(RegExp(r'\n'))) {
+      return;
+    }
+
+    final isMentionSubmitted = document.collectStyle(indexOfLastMentionTrigger, 0);
+    if (isMentionSubmitted.keys.contains(Attribute.mention)) {
+      return;
+    }
+
+    updateMention(
+      plainText.substring(indexOfLastMentionTrigger, indexOfLastMentionTrigger + 1),
+      plainText.substring(indexOfLastMentionTrigger + 1, selection.end),
+    );
   }
 }

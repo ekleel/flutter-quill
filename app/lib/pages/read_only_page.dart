@@ -46,6 +46,7 @@ class _ReadOnlyPageState extends State<ReadOnlyPage> {
           enableInteractiveSelection: true,
           expands: false,
           padding: EdgeInsets.zero,
+          onMentionClicked: (value) => print('onMentionClicked: $value'),
           embedBuilder: defaultEmbedBuilder,
         ),
       ),

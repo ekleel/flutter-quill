@@ -1,4 +1,3 @@
-import 'dart:io' as io;
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
@@ -14,11 +13,8 @@ import 'package:flutter_quill/models/documents/nodes/leaf.dart' as leaf;
 import 'package:flutter_quill/models/documents/nodes/line.dart';
 import 'package:flutter_quill/models/documents/nodes/node.dart';
 import 'package:flutter_quill/widgets/raw_editor.dart';
-import 'package:flutter_quill/widgets/responsive_widget.dart';
 import 'package:flutter_quill/widgets/text_selection.dart';
-import 'package:universal_html/prefer_universal/html.dart' as html;
 
-import 'FakeUi.dart' if (dart.library.html) 'RealUi.dart' as ui;
 import 'box.dart';
 import 'controller.dart';
 import 'cursor.dart';
@@ -86,50 +82,6 @@ abstract class RenderAbstractEditor {
   void selectPosition(SelectionChangedCause cause);
 }
 
-Widget _defaultEmbedBuilder(BuildContext context, leaf.Embed node) {
-  switch (node.value.type) {
-    case 'image':
-      String imageUrl = node.value.data;
-      return imageUrl.startsWith('http') ? Image.network(imageUrl) : Image.file(io.File(imageUrl));
-    default:
-      throw UnimplementedError('Embeddable type "${node.value.type}" is not supported by default embed '
-          'builder of QuillEditor. You must pass your own builder function to '
-          'embedBuilder property of QuillEditor or QuillField widgets.');
-  }
-}
-
-Widget _defaultEmbedBuilderWeb(BuildContext context, leaf.Embed node) {
-  switch (node.value.type) {
-    case 'image':
-      String imageUrl = node.value.data;
-      Size size = MediaQuery.of(context).size;
-      ui.platformViewRegistry.registerViewFactory(
-        imageUrl,
-        (int viewId) => html.ImageElement()..src = imageUrl,
-      );
-      return Padding(
-        padding: EdgeInsets.only(
-          right: ResponsiveWidget.isMediumScreen(context)
-              ? size.width * 0.5
-              : (ResponsiveWidget.isLargeScreen(context))
-                  ? size.width * 0.75
-                  : size.width * 0.2,
-        ),
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.45,
-          child: HtmlElementView(
-            viewType: imageUrl,
-          ),
-        ),
-      );
-
-    default:
-      throw UnimplementedError('Embeddable type "${node.value.type}" is not supported by default embed '
-          'builder of QuillEditor. You must pass your own builder function to '
-          'embedBuilder property of QuillEditor or QuillField widgets.');
-  }
-}
-
 class QuillEditor extends StatefulWidget {
   final QuillController controller;
   final FocusNode focusNode;
@@ -152,6 +104,9 @@ class QuillEditor extends StatefulWidget {
   final void Function(TapUpDetails, leaf.Leaf) onTap;
   final EmbedBuilder embedBuilder;
   final TextSelectionControls textSelectionControls;
+  final Future<void> Function(String trigger, String value) onMentionFetch;
+  final ValueChanged<Map<String, String>> onMentionClicked;
+  final WidgetBuilder mentionBuilder;
 
   QuillEditor({
     @required this.controller,
@@ -173,8 +128,11 @@ class QuillEditor extends StatefulWidget {
     this.scrollPhysics,
     this.onLaunchUrl,
     this.onTap,
-    this.embedBuilder = kIsWeb ? _defaultEmbedBuilderWeb : _defaultEmbedBuilder,
+    @required this.embedBuilder,
     this.textSelectionControls,
+    this.onMentionFetch,
+    this.onMentionClicked,
+    this.mentionBuilder,
   })  : assert(controller != null),
         assert(scrollController != null),
         assert(scrollable != null),
@@ -185,15 +143,17 @@ class QuillEditor extends StatefulWidget {
 
   factory QuillEditor.basic({@required QuillController controller, bool readOnly}) {
     return QuillEditor(
-        controller: controller,
-        scrollController: ScrollController(),
-        scrollable: true,
-        focusNode: FocusNode(),
-        autoFocus: true,
-        readOnly: readOnly,
-        enableInteractiveSelection: true,
-        expands: false,
-        padding: EdgeInsets.zero);
+      controller: controller,
+      scrollController: ScrollController(),
+      scrollable: true,
+      focusNode: FocusNode(),
+      autoFocus: true,
+      readOnly: readOnly,
+      enableInteractiveSelection: true,
+      expands: false,
+      padding: EdgeInsets.zero,
+      embedBuilder: null,
+    );
   }
 
   @override
@@ -261,10 +221,10 @@ class _QuillEditorState extends State<QuillEditor> implements EditorTextSelectio
       widget.onLaunchUrl,
       widget.onTap,
       ToolbarOptions(
-        copy: true,
-        cut: true,
-        paste: true,
-        selectAll: true,
+        copy: widget.enableInteractiveSelection ?? true,
+        cut: widget.enableInteractiveSelection ?? true,
+        paste: widget.enableInteractiveSelection ?? true,
+        selectAll: widget.enableInteractiveSelection ?? true,
       ),
       theme.platform == TargetPlatform.iOS || theme.platform == TargetPlatform.android,
       widget.showCursor,
@@ -289,6 +249,9 @@ class _QuillEditorState extends State<QuillEditor> implements EditorTextSelectio
       widget.enableInteractiveSelection,
       widget.scrollPhysics,
       widget.embedBuilder,
+      widget.onMentionFetch,
+      widget.onMentionClicked,
+      widget.mentionBuilder,
     );
 
     return _selectionGestureDetectorBuilder.build(
@@ -391,6 +354,13 @@ class _QuillEditorSelectionGestureDetectorBuilder extends EditorTextSelectionGes
           link = 'https://$link';
         }
         getEditor().widget.onLaunchUrl(link);
+      }
+      return false;
+    }
+    if (segment.style.containsKey(Attribute.mention.key)) {
+      final Map<String, String> mention = segment.style.attributes[Attribute.mention.key].value;
+      if (getEditor().widget.readOnly && getEditor().widget.onMentionClicked != null && mention != null) {
+        getEditor().widget.onMentionClicked(mention);
       }
       return false;
     }

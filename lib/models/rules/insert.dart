@@ -22,23 +22,18 @@ class PreserveLineStyleOnSplitRule extends InsertRule {
   const PreserveLineStyleOnSplitRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     if (data is! String || (data as String) != '\n') {
       return null;
     }
 
     DeltaIterator itr = DeltaIterator(document);
     Operation before = itr.skip(index);
-    if (before == null ||
-        before.data is! String ||
-        (before.data as String).endsWith('\n')) {
+    if (before == null || before.data is! String || (before.data as String).endsWith('\n')) {
       return null;
     }
     Operation after = itr.next();
-    if (after == null ||
-        after.data is! String ||
-        (after.data as String).startsWith('\n')) {
+    if (after == null || after.data is! String || (after.data as String).startsWith('\n')) {
       return null;
     }
 
@@ -61,8 +56,7 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
   const PreserveBlockStyleOnInsertRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     if (data is! String || !(data as String).contains('\n')) {
       return null;
     }
@@ -71,8 +65,7 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
     itr.skip(index);
 
     Tuple2<Operation, int> nextNewLine = _getNextNewLine(itr);
-    Style lineStyle =
-        Style.fromJson(nextNewLine.item1?.attributes ?? <String, dynamic>{});
+    Style lineStyle = Style.fromJson(nextNewLine.item1?.attributes ?? <String, dynamic>{});
 
     Attribute attribute = lineStyle.getBlockExceptHeader();
     if (attribute == null) {
@@ -103,9 +96,7 @@ class PreserveBlockStyleOnInsertRule extends InsertRule {
 
     if (resetStyle != null) {
       delta.retain(nextNewLine.item2);
-      delta
-        ..retain((nextNewLine.item1.data as String).indexOf('\n'))
-        ..retain(1, resetStyle);
+      delta..retain((nextNewLine.item1.data as String).indexOf('\n'))..retain(1, resetStyle);
     }
 
     return delta;
@@ -126,16 +117,14 @@ class AutoExitBlockRule extends InsertRule {
   }
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     if (data is! String || (data as String) != '\n') {
       return null;
     }
 
     DeltaIterator itr = DeltaIterator(document);
     Operation prev = itr.skip(index), cur = itr.next();
-    Attribute blockStyle =
-        Style.fromJson(cur.attributes).getBlockExceptHeader();
+    Attribute blockStyle = Style.fromJson(cur.attributes).getBlockExceptHeader();
     if (cur.isPlain || blockStyle == null) {
       return null;
     }
@@ -150,14 +139,12 @@ class AutoExitBlockRule extends InsertRule {
     Tuple2<Operation, int> nextNewLine = _getNextNewLine(itr);
     if (nextNewLine.item1 != null &&
         nextNewLine.item1.attributes != null &&
-        Style.fromJson(nextNewLine.item1.attributes).getBlockExceptHeader() ==
-            blockStyle) {
+        Style.fromJson(nextNewLine.item1.attributes).getBlockExceptHeader() == blockStyle) {
       return null;
     }
 
     final attributes = cur.attributes ?? <String, dynamic>{};
-    String k = attributes.keys
-        .firstWhere((k) => Attribute.blockKeysExceptHeader.contains(k));
+    String k = attributes.keys.firstWhere((k) => Attribute.blockKeysExceptHeader.contains(k));
     attributes[k] = null;
     // retain(1) should be '\n', set it with no attribute
     return Delta()..retain(index)..retain(1, attributes);
@@ -168,8 +155,7 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
   const ResetLineFormatOnNewLineRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     if (data is! String || (data as String) != '\n') {
       return null;
     }
@@ -182,8 +168,7 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
     }
 
     Map<String, dynamic> resetStyle;
-    if (cur.attributes != null &&
-        cur.attributes.containsKey(Attribute.header.key)) {
+    if (cur.attributes != null && cur.attributes.containsKey(Attribute.header.key)) {
       resetStyle = Attribute.header.toJson();
     }
     return Delta()
@@ -198,8 +183,7 @@ class InsertEmbedsRule extends InsertRule {
   const InsertEmbedsRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     if (data is String) {
       return null;
     }
@@ -246,8 +230,7 @@ class ForceNewlineForInsertsAroundEmbedRule extends InsertRule {
   const ForceNewlineForInsertsAroundEmbedRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     if (data is! String) {
       return null;
     }
@@ -277,8 +260,7 @@ class AutoFormatLinksRule extends InsertRule {
   const AutoFormatLinksRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     if (data is! String || (data as String) != ' ') {
       return null;
     }
@@ -312,51 +294,98 @@ class AutoFormatLinksRule extends InsertRule {
   }
 }
 
+class AutoFormatMentionsRule extends InsertRule {
+  const AutoFormatMentionsRule();
+
+  @override
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
+    if (data is! String || (data as String) != ' ') {
+      return null;
+    }
+
+    DeltaIterator itr = DeltaIterator(document);
+    Operation prev = itr.skip(index);
+    if (prev == null || prev.data is! String) {
+      return null;
+    }
+
+    try {
+      String cand = (prev.data as String).split('\n').last.split(' ').last;
+      if (!cand.startsWith('@')) {
+        return null;
+      }
+      Map<String, dynamic> attributes = prev.attributes ?? <String, dynamic>{};
+
+      if (attributes.containsKey(Attribute.mention.key)) {
+        return null;
+      }
+
+      attributes.addAll(MentionAttribute(userName: cand.replaceFirst('@', '')).toJson());
+      return Delta()
+        ..retain(index - cand.length)
+        ..retain(cand.length, attributes)
+        ..insert(data as String, prev.attributes);
+    } on FormatException {
+      return null;
+    }
+  }
+}
+
 class PreserveInlineStylesRule extends InsertRule {
   const PreserveInlineStylesRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     if (data is! String || (data as String).contains('\n')) {
       return null;
     }
 
     DeltaIterator itr = DeltaIterator(document);
     Operation prev = itr.skip(index);
-    if (prev == null ||
-        prev.data is! String ||
-        (prev.data as String).contains('\n')) {
+    if (prev == null || prev.data is! String || (prev.data as String).contains('\n')) {
       return null;
     }
+    final previousText = prev.data is String ? prev.data as String : '';
 
     Map<String, dynamic> attributes = prev.attributes;
     String text = data as String;
-    if (attributes == null || !attributes.containsKey(Attribute.link.key)) {
+    final hasLinkOrMention = (attributes != null &&
+        (attributes.containsKey(Attribute.link.key) || attributes.containsKey(Attribute.mention.key)));
+    if (!hasLinkOrMention) {
       return Delta()
         ..retain(index)
         ..insert(text, attributes);
     }
 
-    attributes.remove(Attribute.link.key);
-    Delta delta = Delta()
+    // Mention style should be removed if there is insert inside or after it.
+    var noLinkAndMentionAttributes = prev.attributes;
+    noLinkAndMentionAttributes.remove(Attribute.link.key);
+    noLinkAndMentionAttributes.remove(Attribute.mention.key);
+    final noLinkAndMentionResult = Delta()
       ..retain(index)
-      ..insert(text, attributes.isEmpty ? null : attributes);
+      ..insert(text, noLinkAndMentionAttributes.isEmpty ? null : noLinkAndMentionAttributes);
+
     Operation next = itr.next();
     if (next == null) {
-      return delta;
+      return noLinkAndMentionResult;
     }
-    Map<String, dynamic> nextAttributes =
-        next.attributes ?? const <String, dynamic>{};
-    if (!nextAttributes.containsKey(Attribute.link.key)) {
-      return delta;
+
+    Map<String, dynamic> nextAttributes = next.attributes ?? const <String, dynamic>{};
+    if (!(nextAttributes.containsKey(Attribute.link.key) || nextAttributes.containsKey(Attribute.mention.key))) {
+      return noLinkAndMentionResult;
     }
-    if (attributes[Attribute.link.key] == nextAttributes[Attribute.link.key]) {
+
+    if (nextAttributes.containsKey(Attribute.mention.key)) {
       return Delta()
-        ..retain(index)
-        ..insert(text, attributes);
+        ..retain(index - previousText.length)
+        ..delete(previousText.length)
+        ..insert(previousText)
+        ..insert(text, attributes.remove(Attribute.mention))
+        ..delete(next.length)
+        ..insert(next.data);
     }
-    return delta;
+
+    return noLinkAndMentionResult;
   }
 }
 
@@ -364,8 +393,7 @@ class CatchAllInsertRule extends InsertRule {
   const CatchAllInsertRule();
 
   @override
-  Delta applyRule(Delta document, int index,
-      {int len, Object data, Attribute attribute}) {
+  Delta applyRule(Delta document, int index, {int len, Object data, Attribute attribute}) {
     return Delta()
       ..retain(index)
       ..insert(data);

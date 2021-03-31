@@ -114,6 +114,7 @@ class TextLine extends StatelessWidget {
       Attribute.bold.key: defaultStyles.bold,
       Attribute.italic.key: defaultStyles.italic,
       Attribute.link.key: defaultStyles.link,
+      Attribute.mention.key: defaultStyles.mention,
       Attribute.underline.key: defaultStyles.underline,
       Attribute.strikeThrough.key: defaultStyles.strikeThrough,
     };
@@ -173,7 +174,7 @@ class TextLine extends StatelessWidget {
     if (b.decoration != null) {
       decorations.add(b.decoration);
     }
-    return a.merge(b).apply(decoration: TextDecoration.combine(decorations));
+    return a.merge(b).apply(decoration: TextDecoration.combine(List.castFrom<dynamic, TextDecoration>(decorations)));
   }
 }
 
@@ -714,6 +715,11 @@ class RenderEditableTextLine extends RenderEditableBox {
     );
     _cursorPainter.paint(context.canvas, effectiveOffset, position);
   }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {@required Offset position}) {
+    return _children.first.hitTest(result, position: position);
+  }
 }
 
 class _TextLineElement extends RenderObjectElement {
@@ -757,8 +763,7 @@ class _TextLineElement extends RenderObjectElement {
   }
 
   @override
-  insertRenderObjectChild(RenderObject child, TextLineSlot slot) {
-    assert(child is RenderBox);
+  insertRenderObjectChild(RenderBox child, TextLineSlot slot) {
     _updateRenderObject(child, slot);
     assert(renderObject.children.keys.contains(slot));
   }
@@ -787,13 +792,13 @@ class _TextLineElement extends RenderObjectElement {
     }
   }
 
-  _updateRenderObject(RenderObject child, TextLineSlot slot) {
+  _updateRenderObject(RenderBox child, TextLineSlot slot) {
     switch (slot) {
       case TextLineSlot.LEADING:
-        renderObject.setLeading(child as RenderBox);
+        renderObject.setLeading(child);
         break;
       case TextLineSlot.BODY:
-        renderObject.setBody(child as RenderBox);
+        renderObject.setBody((child) as RenderContentProxyBox);
         break;
       default:
         throw UnimplementedError();

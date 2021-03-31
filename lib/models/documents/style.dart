@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_quill/models/documents/attribute.dart';
-import 'package:quiver_hashcode/hashcode.dart';
+import 'package:quiver/core.dart';
 
 /* Collection of style attributes */
 class Style {
@@ -24,8 +24,8 @@ class Style {
 
   Map<String, dynamic> toJson() => _attributes.isEmpty
       ? null
-      : _attributes.map<String, dynamic>((String _, Attribute attribute) =>
-          MapEntry<String, dynamic>(attribute.key, attribute.value));
+      : _attributes.map<String, dynamic>(
+          (String _, Attribute attribute) => MapEntry<String, dynamic>(attribute.key, attribute.value));
 
   Iterable<String> get keys => _attributes.keys;
 
@@ -39,8 +39,7 @@ class Style {
 
   bool get isInline => isNotEmpty && values.every((item) => item.isInline);
 
-  bool get isIgnored =>
-      isNotEmpty && values.every((item) => item.scope == AttributeScope.IGNORE);
+  bool get isIgnored => isNotEmpty && values.every((item) => item.scope == AttributeScope.IGNORE);
 
   Attribute get single => _attributes.values.single;
 
@@ -100,8 +99,7 @@ class Style {
 
   @override
   int get hashCode {
-    final hashes =
-        _attributes.entries.map((entry) => hash2(entry.key, entry.value));
+    final hashes = _attributes.entries.map((entry) => hash2(entry.key, entry.value));
     return hashObjects(hashes);
   }
 

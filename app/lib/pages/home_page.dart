@@ -41,10 +41,48 @@ Widget defaultEmbedBuilder(BuildContext context, leaf.Embed embed) {
   }
 }
 
+const _mentionTriggers = ['@'];
+
+const List<Map<String, String>> _usersList = [
+  {
+    "displayName": "علي العبدالله",
+    "userName": "aliabd",
+    "uid": "ewqbbterWfmsiewnb",
+  },
+  {
+    "displayName": "فهد محمد",
+    "userName": "fahad",
+    "uid": "zvgbfrWfmsiewnb",
+  },
+  {
+    "displayName": "عبدالعزيز علي",
+    "userName": "abod",
+    "uid": "qwrbrWfmsciewnb",
+  },
+  {
+    "displayName": "خالد المحمد",
+    "userName": "khalid",
+    "uid": "brWfmsadsiewnb",
+  },
+  {
+    "displayName": "هند السليمان",
+    "userName": "hind",
+    "uid": "blpptibrWfmsiewnb",
+  },
+];
+
 const DELTA_SAMPLE = [
+  {"insert": "البُن (الاسم العلمي: Coffea) هو جنس من النباتات يتبع الفصيلة الفوية من رتبة الجنطيانيات. "},
+  {
+    "insert": "@ويكيبيدا",
+    // "attributes": {"mention": "https://ar.wikipedia.org/wiki/%D8%A8%D9%86"}
+    "attributes": {
+      "mention": {"displayName": "ويكيبيديا", "userName": "wikipedia", "uid": "brWfmsiewnb"}
+    }
+  },
   {
     "insert":
-        "البُن (الاسم العلمي: Coffea) هو جنس من النباتات يتبع الفصيلة الفوية من رتبة الجنطيانيات. والبن شجرة دائمة الخضرة ذات ثمار حمراء اللون في حالة نضجها، وتحتوي على مكونات قد تكون ضارة بالصحة مثل الكافيين. غير أن إحدى أحدث الأبحاث العلمية أشارت إلى انخفاض في نسبة المصابين بالنوع الثاني من داء السكري بين الذين يتناولون القهوة، وبالأخص القهوة منزوعة الكافيين. كما أن له تأثيرات سلبية سيئة على الذاكرة المؤقتة، فقد نشرت إذاعة بي بي سي على موقعها بتاريخ 20 يوليو 2004 خبر دراسة من المدرسة الدولية للدراسات المتقدمة في إيطاليا يقول بأن الكافيين يمكن أن يعيق الذاكرة المؤقتة وتذكر بعض الأسماء. لذلك يشار للطلاب باجتناب شرب القهوة والشاي والكوكا وغيرها من الأشياء المحتوية على مادة الكافيين دائماً وخاصة أيام الامتحانات.\n"
+        " البُن (الاسم العلمي: Coffea) هو جنس من النباتات يتبع الفصيلة الفوية من رتبة الجنطيانيات. والبن شجرة دائمة الخضرة ذات ثمار حمراء اللون في حالة نضجها، وتحتوي على مكونات قد تكون ضارة بالصحة مثل الكافيين. غير أن إحدى أحدث الأبحاث العلمية أشارت إلى انخفاض في نسبة المصابين بالنوع الثاني من داء السكري بين الذين يتناولون القهوة، وبالأخص القهوة منزوعة الكافيين. كما أن له تأثيرات سلبية سيئة على الذاكرة المؤقتة، فقد نشرت إذاعة بي بي سي على موقعها بتاريخ 20 يوليو 2004 خبر دراسة من المدرسة الدولية للدراسات المتقدمة في إيطاليا يقول بأن الكافيين يمكن أن يعيق الذاكرة المؤقتة وتذكر بعض الأسماء. لذلك يشار للطلاب باجتناب شرب القهوة والشاي والكوكا وغيرها من الأشياء المحتوية على مادة الكافيين دائماً وخاصة أيام الامتحانات.\n"
   },
   {
     "insert": {"divider": true}
@@ -141,10 +179,14 @@ class _HomePageState extends State<HomePage> {
   QuillController _controller;
   final FocusNode _focusNode = FocusNode();
 
+  List<Map<String, String>> _suggestions;
+
   @override
   void initState() {
     super.initState();
     _loadFromAssets();
+
+    _suggestions = [];
   }
 
   Future<void> _loadFromAssets() async {
@@ -154,15 +196,45 @@ class _HomePageState extends State<HomePage> {
       final doc = Document.fromJson(DELTA_SAMPLE);
       // final doc = Document()..insert(0, '');
       setState(() {
-        _controller = QuillController(document: doc, selection: TextSelection.collapsed(offset: 0));
+        _controller = QuillController(
+            document: doc, selection: TextSelection.collapsed(offset: 0), mentionTriggers: _mentionTriggers);
       });
     } catch (error) {
       print('error: $error');
       final doc = Document()..insert(0, 'Empty asset');
       setState(() {
-        _controller = QuillController(document: doc, selection: TextSelection.collapsed(offset: 0));
+        _controller = QuillController(
+            document: doc, selection: TextSelection.collapsed(offset: 0), mentionTriggers: _mentionTriggers);
       });
     }
+  }
+
+  Future<void> _onMentionFetch(String trigger, String value) async {
+    print('onMentionFetch: $trigger/$value');
+    final List<Map<String, String>> suggestions = [];
+    _usersList.forEach((entry) {
+      final userName = entry['userName'];
+      final displayName = entry['displayName'];
+      if (displayName.contains(value) || userName.contains(value)) {
+        suggestions.add(entry);
+      }
+    });
+    _suggestions = suggestions;
+  }
+
+  void _onMentionClicked(Map<String, String> value) {
+    print('onMentionClicked: $value');
+  }
+
+  void _onMentionSuggestionSelected(Map<String, String> item) {
+    _controller.addMention(
+      MentionAttribute(
+        uid: item['uid'],
+        userName: item['userName'],
+        displayName: item['displayName'],
+      ),
+      item['displayName'],
+    );
   }
 
   @override
@@ -293,7 +365,26 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                mention: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
               ),
+              onMentionFetch: (trigger, value) async => _onMentionFetch(trigger, value),
+              onMentionClicked: _onMentionClicked,
+              // onMentionSuggestionSelected: _onMentionSuggestionSelected,
+              mentionBuilder: (context) {
+                return Column(
+                  children: _suggestions
+                      .map(
+                        (item) => ListTile(
+                          onTap: () => _onMentionSuggestionSelected(item),
+                          title: Text(item['displayName']),
+                        ),
+                      )
+                      .toList(),
+                );
+              },
             ),
           ),
           Container(
