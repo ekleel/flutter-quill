@@ -118,6 +118,7 @@ class _MentionSuggestionList extends StatelessWidget {
 
   Widget _buildOverlayWidget(BuildContext context) {
     return Card(
+      elevation: 4.0,
       child: SingleChildScrollView(
         child: IntrinsicWidth(
           child: builder(context),

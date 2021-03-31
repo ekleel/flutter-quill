@@ -193,11 +193,16 @@ class _HomePageState extends State<HomePage> {
     try {
       // final result = await rootBundle.loadString('assets/sample_data.json');
       // final doc = Document.fromJson(jsonDecode(result));
-      final doc = Document.fromJson(DELTA_SAMPLE);
-      // final doc = Document()..insert(0, '');
+      // final doc = Document.fromJson(DELTA_SAMPLE);
+      final doc = Document()..insert(0, '');
       setState(() {
         _controller = QuillController(
             document: doc, selection: TextSelection.collapsed(offset: 0), mentionTriggers: _mentionTriggers);
+      });
+      _controller.changes.listen((event) {
+        String text = _controller.document.toPlainText();
+        text = text.trim();
+        // print('controller changes: ${text.isNotEmpty} - ${_controller.document.toDelta()}');
       });
     } catch (error) {
       print('error: $error');
@@ -210,7 +215,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _onMentionFetch(String trigger, String value) async {
-    print('onMentionFetch: $trigger/$value');
+    // print('onMentionFetch: $trigger/$value');
     final List<Map<String, String>> suggestions = [];
     _usersList.forEach((entry) {
       final userName = entry['userName'];
@@ -223,7 +228,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onMentionTap(Map<String, dynamic> value) {
-    print('onMentionTap: $value');
+    // print('onMentionTap: $value');
   }
 
   void _onMentionSuggestionSelected(Map<String, String> item) {

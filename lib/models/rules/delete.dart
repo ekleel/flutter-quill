@@ -124,8 +124,8 @@ class HandleMentionDeleteRule extends DeleteRule {
     final iter = DeltaIterator(document);
 
     final previous = iter.skip(index);
-    final previousAttributes = previous.attributes ?? const <String, dynamic>{};
-    final previousText = previous.data is String ? previous.data as String : '';
+    final previousAttributes = previous?.attributes ?? const <String, dynamic>{};
+    final previousText = previous?.data is String ? previous.data as String : '';
 
     final next = (iter..skip(len)).next();
     final nextAttributes = next.attributes ?? const <String, dynamic>{};

@@ -865,7 +865,7 @@ class RenderEditableContainerBox extends RenderBox
   RenderEditableBox childAtPosition(TextPosition position) {
     assert(firstChild != null);
 
-    Node targetNode = _container.queryChild(position.offset, false).node;
+    Node targetNode = _container.queryChild(position.offset, true).node;
 
     var targetChild = firstChild;
     while (targetChild != null) {

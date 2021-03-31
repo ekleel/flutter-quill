@@ -816,6 +816,8 @@ class RawEditorState extends EditorState
     assert(!hasConnection);
     _selectionOverlay?.dispose();
     _selectionOverlay = null;
+    _suggestionOverlay?.hide();
+    _suggestionOverlay = null;
     widget.controller.removeListener(_didChangeTextEditingValue);
     widget.focusNode.removeListener(_handleFocusChanged);
     _focusAttachment.detach();
@@ -914,7 +916,6 @@ class RawEditorState extends EditorState
           textEditingValue: textEditingValue,
           renderObject: getRenderEditor(),
           debugRequiredFor: widget,
-          // onSelected: _handleMentionSuggestionSelected,
           builder: widget.mentionBuilder,
         );
         _suggestionOverlay.showSuggestions();

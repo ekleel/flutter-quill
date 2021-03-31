@@ -238,8 +238,9 @@ class QuillController extends ChangeNotifier {
     }
 
     final plainText = document.toPlainText();
-    final indexOfLastMentionTrigger =
-        plainText.substring(0, selection.end).lastIndexOf(RegExp(_mentionTriggers.join('|')));
+    final indexOfLastMentionTrigger = plainText.substring(0, selection.end).lastIndexOf(
+          RegExp(_mentionTriggers.join('|')),
+        );
 
     if (indexOfLastMentionTrigger < 0) {
       return;
@@ -250,7 +251,7 @@ class QuillController extends ChangeNotifier {
     }
 
     final isMentionSubmitted = document.collectStyle(indexOfLastMentionTrigger, 0);
-    if (isMentionSubmitted.keys.contains(Attribute.mention)) {
+    if (isMentionSubmitted.keys.contains(Attribute.mention.key)) {
       return;
     }
 
