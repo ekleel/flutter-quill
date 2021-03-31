@@ -60,6 +60,11 @@ const List<Map<String, String>> _usersList = [
     "uid": "qwrbrWfmsciewnb",
   },
   {
+    "displayName": "عبدالله فهد",
+    "userName": "fahad",
+    "uid": "qwrbrWfmcwesciewnb",
+  },
+  {
     "displayName": "خالد المحمد",
     "userName": "khalid",
     "uid": "brWfmsadsiewnb",
@@ -179,14 +184,12 @@ class _HomePageState extends State<HomePage> {
   QuillController _controller;
   final FocusNode _focusNode = FocusNode();
 
-  List<Map<String, String>> _suggestions;
+  String _lastMentionValue;
 
   @override
   void initState() {
     super.initState();
     _loadFromAssets();
-
-    _suggestions = [];
   }
 
   Future<void> _loadFromAssets() async {
@@ -216,6 +219,26 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _onMentionFetch(String trigger, String value) async {
     // print('onMentionFetch: $trigger/$value');
+    // final List<Map<String, String>> suggestions = [];
+    // _usersList.forEach((entry) {
+    //   final userName = entry['userName'];
+    //   final displayName = entry['displayName'];
+    //   if (displayName.contains(value) || userName.contains(value)) {
+    //     suggestions.add(entry);
+    //   }
+    // });
+    // _suggestions = suggestions;
+    print('onMentionFetch - values: $_lastMentionValue - $value');
+    if (_controller.isMentionLoading || value == null || value.length < 2 || _lastMentionValue == value) {
+      print('onMentionFetch - exit: ($value), ${value.length}, ${_controller.isMentionLoading}');
+      return;
+    }
+    setState(() {
+      _lastMentionValue = value;
+    });
+    _controller.updateMentionSuggestions([]);
+    _controller.toggleMentionLoading(true);
+    await Future.delayed(const Duration(milliseconds: 2500));
     final List<Map<String, String>> suggestions = [];
     _usersList.forEach((entry) {
       final userName = entry['userName'];
@@ -224,7 +247,9 @@ class _HomePageState extends State<HomePage> {
         suggestions.add(entry);
       }
     });
-    _suggestions = suggestions;
+    _controller.updateMentionSuggestions(suggestions);
+    _controller.toggleMentionLoading(false);
+    print('onMentionFetch - done: ($value) - ${suggestions?.length}');
   }
 
   void _onMentionTap(Map<String, dynamic> value) {
@@ -307,106 +332,120 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildWelcomeEditor(BuildContext context) {
     return SafeArea(
-      child: Stack(
-        children: <Widget>[
-          Container(
-            height: MediaQuery.of(context).size.height * 0.88,
-            color: Colors.white,
-            padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-            child: QuillEditor(
-              controller: _controller,
-              scrollController: ScrollController(),
-              scrollable: true,
-              focusNode: _focusNode,
-              autoFocus: false,
-              readOnly: false,
-              placeholder: 'Add content',
-              enableInteractiveSelection: true,
-              expands: false,
-              padding: EdgeInsets.only(top: 50.0),
-              embedBuilder: defaultEmbedBuilder,
-              textSelectionControls: materialTextSelectionControls,
-              onTap: (details, segment) {
-                if (segment.value is BlockEmbed) {
-                  final embed = segment.value as BlockEmbed;
-                  print('onTap embed: ${embed.type}');
-                }
-              },
-              customStyles: DefaultStyles(
-                h1: DefaultTextBlockStyle(
-                  TextStyle(
-                    fontSize: 25.0,
-                    color: Colors.black,
-                    height: 1.15,
-                    fontWeight: FontWeight.w300,
-                  ),
-                  Tuple2(16.0, 0.0),
-                  Tuple2(0.0, 0.0),
-                  null,
-                ),
-                h2: DefaultTextBlockStyle(
-                  TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.black,
-                    height: 1.15,
-                    fontWeight: FontWeight.w300,
-                  ),
-                  Tuple2(16.0, 0.0),
-                  Tuple2(0.0, 0.0),
-                  null,
-                ),
-                sizeSmall: TextStyle(fontSize: 9.0),
-                quote: DefaultTextBlockStyle(
-                  TextStyle(
-                    // fontSize: 20.0,
-                    color: Colors.black,
-                    height: 1.15,
-                    fontWeight: FontWeight.w300,
-                  ),
-                  Tuple2(12.0, 12.0),
-                  Tuple2(12.0, 12.0),
-                  BoxDecoration(
-                    color: Colors.red.shade100,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                mention: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
-              onMentionFetch: (trigger, value) async => _onMentionFetch(trigger, value),
-              onMentionTap: _onMentionTap,
-              mentionOverlayBuilder: (context) {
-                return Card(
-                  elevation: 4.0,
-                  child: ListView.separated(
-                    physics: const BouncingScrollPhysics(),
-                    shrinkWrap: true,
-                    padding: EdgeInsets.zero,
-                    itemCount: _suggestions.length,
-                    separatorBuilder: (context, index) => const Divider(
-                      height: 0.0,
-                      indent: 20.0 / 1.5,
+      child: Row(
+        children: [
+          Expanded(
+            child: Stack(
+              children: <Widget>[
+                Container(
+                  height: MediaQuery.of(context).size.height * 0.88,
+                  color: Colors.white,
+                  padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+                  child: QuillEditor(
+                    controller: _controller,
+                    scrollController: ScrollController(),
+                    scrollable: true,
+                    focusNode: _focusNode,
+                    autoFocus: false,
+                    readOnly: false,
+                    placeholder: 'Add content',
+                    enableInteractiveSelection: true,
+                    expands: false,
+                    padding: EdgeInsets.only(top: 50.0),
+                    embedBuilder: defaultEmbedBuilder,
+                    textSelectionControls: materialTextSelectionControls,
+                    onTap: (details, segment) {
+                      if (segment.value is BlockEmbed) {
+                        final embed = segment.value as BlockEmbed;
+                        print('onTap embed: ${embed.type}');
+                      }
+                    },
+                    customStyles: DefaultStyles(
+                      h1: DefaultTextBlockStyle(
+                        TextStyle(
+                          fontSize: 25.0,
+                          color: Colors.black,
+                          height: 1.15,
+                          fontWeight: FontWeight.w300,
+                        ),
+                        Tuple2(16.0, 0.0),
+                        Tuple2(0.0, 0.0),
+                        null,
+                      ),
+                      h2: DefaultTextBlockStyle(
+                        TextStyle(
+                          fontSize: 20.0,
+                          color: Colors.black,
+                          height: 1.15,
+                          fontWeight: FontWeight.w300,
+                        ),
+                        Tuple2(16.0, 0.0),
+                        Tuple2(0.0, 0.0),
+                        null,
+                      ),
+                      sizeSmall: TextStyle(fontSize: 9.0),
+                      quote: DefaultTextBlockStyle(
+                        TextStyle(
+                          // fontSize: 20.0,
+                          color: Colors.black,
+                          height: 1.15,
+                          fontWeight: FontWeight.w300,
+                        ),
+                        Tuple2(12.0, 12.0),
+                        Tuple2(12.0, 12.0),
+                        BoxDecoration(
+                          color: Colors.red.shade100,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      mention: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
                     ),
-                    itemBuilder: (context, index) {
-                      final item = _suggestions[index];
-                      return ListTile(
-                        onTap: () => _onMentionSuggestionSelected(item),
-                        title: Text(item['displayName']),
+                    onMentionFetch: (trigger, value) async => _onMentionFetch(trigger, value),
+                    onMentionTap: _onMentionTap,
+                    mentionOverlayBuilder: (context, suggestions, isLoading) {
+                      print('home mentionOverlayBuilder suggestions: $isLoading - ${suggestions.length}');
+                      return Card(
+                        elevation: 4.0,
+                        child: !isLoading
+                            ? ListView.separated(
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: true,
+                                padding: EdgeInsets.zero,
+                                itemCount: suggestions.length,
+                                separatorBuilder: (context, index) => const Divider(
+                                  height: 0.0,
+                                  indent: 20.0 / 1.5,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final item = suggestions[index];
+                                  return ListTile(
+                                    onTap: () => _onMentionSuggestionSelected(item),
+                                    title: Text(item['displayName']),
+                                  );
+                                },
+                              )
+                            : Text('Loading!'),
                       );
                     },
                   ),
-                );
-              },
+                ),
+                Container(
+                  child: QuillToolbar.basic(
+                    controller: _controller,
+                    onImagePickCallback: _onImagePickCallback,
+                    showHorizontalRule: true,
+                  ),
+                ),
+              ],
             ),
           ),
           Container(
-            child: QuillToolbar.basic(
-              controller: _controller,
-              onImagePickCallback: _onImagePickCallback,
-              showHorizontalRule: true,
-            ),
+            color: Colors.blueGrey.shade100,
+            width: 150,
+            child: Text('Sidebar'),
           ),
         ],
       ),

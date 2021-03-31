@@ -12,6 +12,7 @@ import 'package:flutter_quill/models/documents/nodes/container.dart' as containe
 import 'package:flutter_quill/models/documents/nodes/leaf.dart' as leaf;
 import 'package:flutter_quill/models/documents/nodes/line.dart';
 import 'package:flutter_quill/models/documents/nodes/node.dart';
+import 'package:flutter_quill/widgets/mention_selection.dart';
 import 'package:flutter_quill/widgets/raw_editor.dart';
 import 'package:flutter_quill/widgets/text_selection.dart';
 
@@ -106,7 +107,7 @@ class QuillEditor extends StatefulWidget {
   final TextSelectionControls textSelectionControls;
   final Future<void> Function(String trigger, String value) onMentionFetch;
   final ValueChanged<Map<String, dynamic>> onMentionTap;
-  final WidgetBuilder mentionOverlayBuilder;
+  final MentionSuggestionWidgetBuilder mentionOverlayBuilder;
 
   QuillEditor({
     @required this.controller,

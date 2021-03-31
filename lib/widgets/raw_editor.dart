@@ -60,7 +60,7 @@ class RawEditor extends StatefulWidget {
   final EmbedBuilder embedBuilder;
   final Future<void> Function(String trigger, String value) onMentionFetch;
   final ValueChanged<Map<String, dynamic>> onMentionTap;
-  final WidgetBuilder mentionOverlayBuilder;
+  final MentionSuggestionWidgetBuilder mentionOverlayBuilder;
 
   RawEditor(
     Key key,
@@ -899,7 +899,7 @@ class RawEditorState extends EditorState
   }
 
   void _updateOrDisposeSuggestionOverlayIfNeeded() {
-    if (widget.controller.isInMentioningMode) {
+    if (widget.controller.isInMentionMode) {
       SchedulerBinding.instance.addPostFrameCallback((Duration _) {
         if (_suggestionOverlay != null) {
           _suggestionOverlay.overlayEntry.remove();

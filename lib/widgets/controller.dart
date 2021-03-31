@@ -182,18 +182,32 @@ class QuillController extends ChangeNotifier {
   }
 
   final List<String> _mentionTriggers;
-  bool _isInMentioningMode = false;
+  List<Map<String, String>> _mentionSuggestions = [];
+  bool _isInMentionMode = false;
+  bool _isMentionLoading = false;
   String _mentionedText;
   String _mentionTrigger;
 
-  bool get isInMentioningMode => _isInMentioningMode;
+  bool get isInMentionMode => _isInMentionMode;
+  bool get isMentionLoading => _isMentionLoading;
+  List<Map<String, String>> get mentionSuggestions => _mentionSuggestions;
   String get mentionTrigger => _mentionTrigger;
   String get mentionedText => _mentionedText;
 
-  bool get hasMention => isInMentioningMode && mentionTrigger != null && mentionedText != null;
+  bool get hasMention => isInMentionMode && mentionTrigger != null && mentionedText != null;
+
+  void updateMentionSuggestions(List<Map<String, String>> suggestions) {
+    _mentionSuggestions = suggestions ?? [];
+    notifyListeners();
+  }
+
+  void toggleMentionLoading(bool value) {
+    _isMentionLoading = value;
+    notifyListeners();
+  }
 
   void updateMention(String trigger, String value) {
-    _isInMentioningMode = true;
+    _isInMentionMode = true;
     _mentionTrigger = trigger;
     _mentionedText = value;
     notifyListeners();
@@ -222,7 +236,7 @@ class QuillController extends ChangeNotifier {
   }
 
   void resetMention() {
-    _isInMentioningMode = false;
+    _isInMentionMode = false;
     _mentionTrigger = null;
     _mentionedText = null;
     notifyListeners();

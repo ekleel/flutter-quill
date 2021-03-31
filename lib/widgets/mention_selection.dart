@@ -8,17 +8,9 @@ import 'package:flutter_quill/widgets/editor.dart';
 /// Builder function for mention suggestions for user.
 typedef MentionSuggestionWidgetBuilder = Widget Function(
   BuildContext context,
-  String trigger,
-  String value,
+  List<Map<String, String>> suggestions,
+  bool isLoading,
 );
-
-class MentionSuggestion {
-  const MentionSuggestion({
-    @required this.values,
-  });
-
-  final List<Map<String, dynamic>> values;
-}
 
 class MentionSuggestionOverlay {
   final BuildContext context;
@@ -27,7 +19,7 @@ class MentionSuggestionOverlay {
   final Widget debugRequiredFor;
   final TextEditingValue textEditingValue;
   final void Function(String, String, String) onSelected;
-  final WidgetBuilder overlayBuilder;
+  final MentionSuggestionWidgetBuilder overlayBuilder;
   OverlayEntry overlayEntry;
 
   MentionSuggestionOverlay({
@@ -73,7 +65,7 @@ class _MentionSuggestionList extends StatelessWidget {
   final RenderEditor renderObject;
   final TextEditingValue textEditingValue;
   final void Function(String, String, String) onSelected;
-  final WidgetBuilder overlayBuilder;
+  final MentionSuggestionWidgetBuilder overlayBuilder;
 
   const _MentionSuggestionList({
     Key key,
@@ -109,7 +101,7 @@ class _MentionSuggestionList extends StatelessWidget {
     if (positionFromRight + listMaxWidth > editingRegion.width) {
       positionFromRight = null;
       // positionFromLeft = endpoints[0].point.dx;
-      positionFromLeft = 5.0;
+      positionFromLeft = positionFromRight;
     }
 
     return Positioned(
@@ -121,7 +113,11 @@ class _MentionSuggestionList extends StatelessWidget {
           maxWidth: min(listMaxWidth, 215.0),
           maxHeight: listMaxHeight,
         ),
-        child: overlayBuilder(context),
+        child: overlayBuilder(
+          context,
+          controller.mentionSuggestions,
+          controller.isMentionLoading,
+        ),
       ),
     );
   }
