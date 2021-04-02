@@ -271,6 +271,12 @@ class QuillController<MS> extends ChangeNotifier {
       return;
     }
 
+    final spaces =
+        plainText.substring(indexOfLastMentionTrigger, selection.end).split('').where((s) => s.contains(RegExp(r'\s')));
+    if (spaces.length >= 2) {
+      return;
+    }
+
     updateMention(
       plainText.substring(indexOfLastMentionTrigger, indexOfLastMentionTrigger + 1),
       plainText.substring(indexOfLastMentionTrigger + 1, selection.end),
