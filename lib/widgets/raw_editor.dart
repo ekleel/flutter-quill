@@ -648,7 +648,10 @@ class RawEditorState extends EditorState
       handleDelete,
     );
 
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux || Platform.isFuchsia) {
+    if (defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.linux ||
+        defaultTargetPlatform == TargetPlatform.fuchsia) {
       _keyboardVisible = true;
     } else {
       _keyboardVisibilityController = KeyboardVisibilityController();
