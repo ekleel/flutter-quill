@@ -20,6 +20,14 @@ typedef DataDecoder = Object Function(Object data);
 /// Default data decoder which simply passes through the original value.
 Object _passThroughDataDecoder(Object data) => data;
 
+const _headerOverrides = [
+  'h1',
+  'h2,' 'h3',
+  'h4',
+  'h5',
+  'h6',
+];
+
 /// Operation performed on a rich-text document.
 class Operation {
   /// Key of insert operations.
@@ -71,12 +79,17 @@ class Operation {
       dynamic attributes = map[Operation.attributesKey];
 
       if (attributes is Map) {
-        final Map map = attributes;
-        if (map.containsKey('h1') || map.containsKey('h2') || map.containsKey('h3')) {
-          final key = int.parse((map.keys.first as String).replaceFirst('h', ''));
-          attributes = {'header': key};
-        } else if (map.containsKey('h4') || map.containsKey('h5') || map.containsKey('h6')) {
-          attributes = {'header': 3};
+        final Map atrMap = attributes;
+        if (atrMap.isNotEmpty) {
+          attributes = {};
+          for (final entry in atrMap.entries) {
+            if (_headerOverrides.contains(entry.key)) {
+              final key = int.parse((entry.key as String).replaceFirst('h', ''));
+              attributes['header'] = key <= 3 ? key : 3;
+            } else {
+              attributes[entry.key] = entry.value;
+            }
+          }
         }
       }
 

@@ -1,4 +1,4 @@
-import 'package:app/pages/home_page.dart';
+import 'package:app/docs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/models/documents/document.dart';
