@@ -98,7 +98,7 @@ class _HomePageState extends State<HomePage> {
     try {
       // final result = await rootBundle.loadString('assets/sample_data.json');
       // final doc = Document.fromJson(jsonDecode(result));
-      final doc = Document.fromJson(DELTA_SAMPLE_WITH_ERROR);
+      final doc = Document.fromJson(DELTA_SAMPLE_WITH_ERROR_2);
       // final doc = Document()..insert(0, '');
       setState(() {
         _controller = QuillController(
